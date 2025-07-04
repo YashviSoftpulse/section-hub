@@ -1,0 +1,549 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+.vertical-stack .Polaris-LegacyStack.Polaris-LegacyStack--vertical {
+  --pc-stack-spacing: var(--p-space-100);
+}
+
+.Polaris-Modal-Dialog__Modal {
+  max-width: 70.75rem;
+}
+
+.layoutSticky {
+  position: sticky;
+  top: var(--p-space-600);
+}
+
+.Polaris-Icon {
+  margin: 0;
+}
+
+.filter-btn div .Polaris-Button--sizeMedium {
+  min-height: var(--p-height-800);
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  display: none !important;
+}
+
+/* .card-tag span.Polaris-Badge.Polaris-Badge--toneInfo {
+  position: absolute;
+  top: 50px;
+  right: 25px;
+} */
+.card-img {
+  object-fit: contain;
+  object-position: center;
+  /* border-radius: 0.75rem;
+  border: 1px solid #d3d3d3; */
+  cursor: pointer;
+}
+
+.section-card .Polaris-Box {
+  flex-direction: column;
+  display: flex;
+  height: 100%;
+}
+
+.section-card .Polaris-BlockStack {
+  height: 100%;
+}
+
+.section-card .Polaris-Box .Polaris-BlockStack .Polaris-BlockStack {
+  height: 100%;
+}
+
+.section-card .Polaris-Box .Polaris-InlineStack {
+  margin-top: auto;
+}
+
+.section-card .Polaris-ShadowBevel {
+  height: 100%;
+}
+
+.page-thumbnail {
+  aspect-ratio: 3 / 2;
+  width: 100%;
+}
+
+.blank-default-template {
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.3px;
+  color: #e3e3e3;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.section-img-modal {
+  width: clamp(61.25rem, 1000px, 1000px);
+  min-height: 85.102vh;
+  max-width: unset ;
+}
+
+.section-img-modal .swiper-slide img {
+  max-width: 100%;
+  width: 100%;
+}
+
+.section-img-modal .swiper-slide {
+  width: 100% !important;
+  overflow: auto;
+}
+
+.section-img-modal .Polaris-Modal__Body {
+  width: 100%;
+  flex: 1;
+  display: flex;
+}
+
+.section-img-modal .Polaris-Box {
+  width: 100%;
+  height: 100%;
+}
+
+/* .section-img-modal .Polaris-BlockStack, .section-img-modal .Polaris-Modal-Section {height: 100%;} */
+.section-img-modal .Polaris-Modal__Body .Polaris-Modal-Section {
+  width: 100%;
+}
+
+.section-img-modal .Polaris-Box .swiper {
+  margin: auto;
+}
+
+.section-img-modal .Polaris-Box .Polaris-BlockStack {
+  height: 100%;
+}
+
+.page-img-modal img {
+  width: 100%;
+}
+
+.Polaris-InlineGrid .pagebuild-card {
+  width: 100%;
+}
+
+.app-chat {
+  position: fixed;
+  right: 19px;
+  bottom: 15px;
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 50%;
+  /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); */
+  display: flex;
+}
+
+.app-chat svg {
+  display: block;
+  max-width: 32px;
+  width: 100%;
+  height: auto;
+}
+
+.main-sidebar {
+  padding-right: 15px;
+  border: 1px solid #e4e4e4;
+  max-width: 220px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.main-theme-section h2 {
+  font-size: 13px;
+  line-height: normal;
+  padding: 8px 15px;
+  font-weight: 500;
+}
+
+.main-theme-section p {
+  font-size: 13px;
+  line-height: normal;
+  color: #242424;
+  padding: 8px 15px;
+  margin-left: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: 0.3s;
+  border-radius: 5px;
+}
+
+.main-theme-section a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #1967d2;
+  font-weight: 500;
+}
+
+.section-title {
+  border-top: 1px solid #e4e4e4;
+  padding-top: 5px;
+}
+
+.theme-sections {
+  padding-bottom: 5px;
+}
+
+.name-of-section svg {
+  height: 18px;
+  width: 18px;
+}
+
+.name-of-section svg path {
+  fill: #484848;
+}
+
+.name-of-section a svg path {
+  fill: #1967d2;
+}
+
+.theme-setting {
+  margin-bottom: 5px;
+}
+
+.popover-image {
+  display: block;
+  max-height: 320px;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+}
+
+.banner-video {
+  width: auto;
+  max-height: 80vh;
+  height: 100%;
+  display: block;
+  margin: auto;
+}
+
+.lazyContent {
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.lazyContent.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.main-blockstck::before {
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.9) 20%,
+    rgba(255, 255, 255, 0) 50%
+  );
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.dashboard-video .Polaris-VideoThumbnail__Thumbnail {
+  padding-bottom: 39.912%;
+}
+
+/* Custom scrollbar styles */
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  /* Set the width of the vertical scrollbar */
+  height: 6px;
+  /* Set the height of the horizontal scrollbar (if applicable) */
+}
+
+/* Style the draggable thumb (the part that the user interacts with) */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  /* Dark gray for the thumb */
+  border-radius: 10px;
+  /* Rounded corners for a smoother look */
+}
+
+/* Style the track (the background area of the scrollbar) */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* Light gray for the track */
+  border-radius: 10px;
+  /* Rounded corners for the track */
+}
+
+/* Style the thumb on hover (lighter color when hovering) */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Lighter thumb when hovered */
+}
+
+.drop-down-container * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  line-height: normal;
+  font-weight: 500;
+}
+
+.drop-down-container {
+  max-width: 490px;
+  width: 100%;
+  height: 270px;
+  padding: 0 10px;
+}
+
+.main-drop-down {
+  border: 1px solid #f1f1f1;
+  border-radius: 10px;
+  height: 270px;
+}
+
+.main-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+}
+
+.main-header .header-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+}
+
+.header-content p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.main-header .header-content:first-child {
+  padding-right: 35px;
+}
+
+.main-header .header-content:last-child {
+  padding-left: 35px;
+}
+
+.main-header .header-content:first-child::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  background-color: #dfdfdf;
+  height: 100%;
+  width: 1px;
+}
+
+.drop-down-content {
+  border: 1px solid #f0f0f0;
+  background-color: #fff;
+  box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.1);
+  max-width: 380px;
+  margin-top: -5px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 10px;
+}
+
+.drop-down-content .search-bar {
+  padding: 8px 10px;
+}
+
+.search-bar .search-input-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px;
+  border-radius: 7px;
+  border: 1px solid #8a8a8a;
+}
+
+.search-bar .search-input-field input {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  line-height: normal;
+  font-weight: 500;
+  border: none;
+  background-color: transparent;
+  color: #8a8a8a;
+}
+
+.close-btn .Polaris-Button {
+  margin-top: 5px !important;
+}
+
+.search-bar .search-input-field input:focus-visible {
+  outline: unset;
+}
+
+.drop-down-page p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 17px;
+  border-top: 1px solid #ebebeb;
+  border-bottom: 1px solid #ebebeb;
+  cursor: pointer;
+}
+
+.drop-down-store {
+  padding: 11px 18px;
+}
+
+.drop-down-store .store-name {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+
+  cursor: pointer;
+}
+
+.store-name div {
+  width: calc(100% - 26px);
+}
+
+.drop-down-store .store-name p {
+  font-size: 12px;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drop-down-store .store-name span {
+  font-size: 10px;
+  color: #797979;
+}
+
+.drop-down-store .add-template {
+  margin-bottom: unset;
+}
+
+.drop-down-store .add-template p {
+  color: #2372d9;
+}
+
+@media only screen and (max-width: 400px) {
+  .main-header .header-content:first-child {
+    padding-right: 20px;
+  }
+
+  .main-header .header-content:last-child {
+    padding-left: 20px;
+  }
+
+  .main-header .header-content {
+    gap: 10px;
+  }
+}
+
+.Polaris-IndexTable__StickyTableHeader--isSticky {
+  visibility: unset;
+}
+
+.sticky-grid-column .Polaris-ShadowBevel:first-of-type {
+  position: sticky;
+  top: var(--p-space-600);
+}
+
+.filter-options {
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  height: 100%;
+  scrollbar-width: thin;
+}
+.modal-filter-options {
+  max-height: calc(100vh - 177px);
+  overflow: auto;
+  height: 100%;
+  scrollbar-width: thin;
+  display: grid;
+}
+.notfound {
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: auto;
+}
+.notfound img {
+  width: 100%;
+  max-width: 300px;
+  margin: auto;
+  padding-bottom: 30px;
+  display: block;
+  object-fit: contain;
+}
+.notfound-modal {
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.notfound-modal img {
+  width: 100%;
+  max-width: 200px;
+  margin: auto;
+  padding-bottom: 30px;
+  display: block;
+  object-fit: contain;
+}
+.spinner-pagebuilder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  padding: 20px;
+}
+
+.section-img-modal .Polaris-InlineStack {
+  align-self: center ;
+  --pc-inline-stack-gap-xs: var(--p-space-00) !important;
+}
+
+.section-img-modal .Polaris-InlineStack .Polaris-Box .Polaris-InlineStack .Polaris-InlineStack .Polaris-Button--variantTertiary {
+  --pc-button-bg_hover: rgb(255 255 255 / 5%) !important;
+  --pc-button-bg_active: rgb(255 255 255 / 8%) !important;
+}
+.section-card-buttons{
+  align-self: auto !important;
+}
+.new-chat {
+  margin: 0 !important;
+}
+.dashboard-icon{
+  margin: 0px !important;
+}
+.main-page .Polaris-Box .Polaris-Page-Header--isSingleRow{
+  max-width: fit-content;
+}
