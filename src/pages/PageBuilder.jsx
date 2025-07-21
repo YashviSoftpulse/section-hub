@@ -15,7 +15,6 @@ import {
   RadioButton,
   InlineGrid,
   List,
-  Link,
   Card,
   Spinner,
 } from "@shopify/polaris";
@@ -28,7 +27,7 @@ import {
   MyEncryption,
 } from "../action";
 import { ConfirmationModal, Skeleton_Page } from "../components";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 function PageBuilder() {
@@ -143,44 +142,6 @@ function PageBuilder() {
     }
   }, [templateListData]);
 
-  // const TemplateList = async () => {
-  //   setLoading(true);
-  //   const formdata = new FormData();
-  //   const response = await fetchData(getApiURL(`/page-builder`), formdata);
-  //   if (response.status === true) {
-  //     setLoading(false);
-  //     setReadymadeTemplates(response?.all_templates?.data);
-  //     setCategoryOptions(() => [
-  //       "My Pages",
-  //       ...response?.all_templates?.filter_options,
-  //     ]);
-  //     setPageList(response?.templates);
-  //     setThemeList(response.themes_list);
-  //     const defaultTheme = response?.themes_list.find(
-  //       (theme) => theme.role === "MAIN"
-  //     );
-  //     if (defaultTheme) setSelectedTheme(defaultTheme);
-  //     if (searchTerm !== "") {
-  //       setFilteredThemes(
-  //         pageList.filter((page) =>
-  //           page?.title?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-  //         )
-  //       );
-  //     } else {
-  //       setFilteredThemes(response?.templates);
-  //     }
-  //   } else {
-  //     setLoading(false);
-  //     shopify.toast.show("Sorry! Process Failed. Please try again later.", {
-  //       isError: true,
-  //       duration: 2000,
-  //     });
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   TemplateList();
-  // }, []);
 
   const handleQueryChange = (value) => {
     setSearchTerm(value);
@@ -208,9 +169,7 @@ function PageBuilder() {
       } else {
         setFilteredThemes((prev) =>
           prev.filter((page) =>
-            page?.internal_title
-              ?.toLowerCase()
-              ?.includes(value.trim().toLowerCase())
+            page?.internal_title?.toLowerCase()?.includes(value.trim().toLowerCase())
           )
         );
       }
@@ -628,10 +587,7 @@ function PageBuilder() {
                                     <Button
                                       onClick={() =>
                                         window.open(
-                                          `https://${SHOP}/pages/${page?.title
-                                            ?.toLowerCase()
-                                            ?.replace(/[()]/g, "")
-                                            ?.replace(/ /g, "-")}`
+                                          `https://${SHOP}/pages/${page?.title?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}`
                                         )
                                       }
                                       icon={ViewIcon}
@@ -640,6 +596,8 @@ function PageBuilder() {
                                 )}
                               </InlineStack>
                             ) : (
+                              
+
                               <Button
                                 size="medium"
                                 variant="secondary"
@@ -869,10 +827,7 @@ function PageBuilder() {
                           <List.Item>
                             Select Page{" "}
                             <b>
-                              {selectedPage
-                                ?.toLowerCase()
-                                ?.replace(/[()]/g, "")
-                                ?.replace(/ /g, "-")}
+                              {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}
                             </b>{" "}
                             Option From the Dropdown{" "}
                           </List.Item>
@@ -1038,10 +993,7 @@ function PageBuilder() {
                                   </svg>
                                   <div>
                                     <p style={{ fontWeight: "bold" }}>
-                                      {selectedPage
-                                        ?.toLowerCase()
-                                        ?.replace(/[()]/g, "")
-                                        ?.replace(/ /g, "-")}
+                                      {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}
                                     </p>
                                     <span>Assigned to 0 pages</span>
                                   </div>
@@ -1119,7 +1071,7 @@ function PageBuilder() {
                       />
                     </BlockStack>
 
-                    <BlockStack>
+                    <BlockStack gap={200}>
                       <Text variant="headingSm" as="h6">
                         Theme List
                       </Text>
@@ -1132,16 +1084,17 @@ function PageBuilder() {
                               className="Polaris-Text--root Polaris-Text--bodyMd"
                               style={{
                                 paddingTop: "0.3rem",
-                                display: "inline-block",
+                                display: "inline-flex",
                                 maxWidth: "200px",
                                 whiteSpace: "normal",
                                 wordWrap: "break-word",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
+                                gap: '10px'
                               }}
                             >
-                              {theme.name}{" "}
-                              {theme.role === "main" && (
+                              <Text>{theme.name}</Text>
+                              {theme.role === "MAIN" && (
                                 <Badge variant="headingSm" tone="success">
                                   Live
                                 </Badge>

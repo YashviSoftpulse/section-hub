@@ -13,7 +13,6 @@ import {
   InlineGrid,
   InlineStack,
   Layout,
-  Link,
   List,
   Modal,
   Page,
@@ -45,7 +44,7 @@ import {
 } from "@shopify/polaris-icons";
 import { ConfirmationModal, SectionCard } from "../../components";
 import Nodata from "/assets/nodata.svg";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 function Create() {
@@ -311,7 +310,7 @@ function Create() {
     setTitle(selectedPageData?.title || "");
     setSelectedSection(selectedPageData?.section_used_details || []);
     setIsDiscardModal(false);
-    setSelectedFilters({});
+    setSelectedFilters([]);
   };
 
   const handlesaveClick = () => {
@@ -789,7 +788,7 @@ function Create() {
                                   : `(0)`
                               }`}</span>
                             }
-                            checked={selectedFilters.includes(filter)}
+                            checked={selectedFilters?.includes(filter)}
                             onChange={() => handleFilterChange(filter)}
                           />
                         ))}
@@ -847,7 +846,7 @@ function Create() {
           if (publishSuccess?.status === "true") {
             setThemeModal(false);
             setPublishSuccess(null);
-            navigate({ href: `/page-builder${location.search}` });
+            navigate({ href: `/page-builder${window.location.search}` });
           }
           setThemeModal(false);
         }}
@@ -916,7 +915,7 @@ function Create() {
 
                   <List gap="loose" type="number">
                     <List.Item>
-                      Go to{" "}
+                      Go to {console.log("selectedTheme", selectedTheme)}
                       <Link
                         to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                         target="blank"
@@ -935,8 +934,7 @@ function Create() {
                     <Button
                       onClick={() => {
                         navigate({
-                          href: "/page-builder",
-                          search: window.location.search,
+                          href: `/page-builder${window.location.search}`,
                         });
                       }}
                     >
