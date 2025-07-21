@@ -334,7 +334,7 @@ function PageBuilder() {
             onClick={() => {
               localStorage.setItem("pageData", JSON.stringify({}));
               navigate({
-                to: `/page-builder/create${window.location.search}`,
+                href: `/page-builder/create${window.location.search}`,
               });
             }}
           >
@@ -411,9 +411,23 @@ function PageBuilder() {
                       </Text>
                     ) : (
                       <Text as="h2" tone="subdued" variant="bodyMd">
-                        Click <b>Create New Page</b> to start building your
-                        first page and leave a lasting impression on your
-                        audience.
+                        Click{" "}
+                        <Button
+                          variant="plain"
+                          onClick={() => {
+                            localStorage.setItem(
+                              "pageData",
+                              JSON.stringify({})
+                            );
+                            navigate({
+                              href: `/page-builder/create${window.location.search}`,
+                            });
+                          }}
+                        >
+                          Create New Page
+                        </Button>{" "}
+                        to start building your first page and leave a lasting
+                        impression on your audience.
                       </Text>
                     )}
                   </BlockStack>
@@ -570,7 +584,7 @@ function PageBuilder() {
                                           JSON.stringify(page)
                                         );
                                         navigate({
-                                          to: `/page-builder/create${window.location.search}`,
+                                          href: `/page-builder/create${window.location.search}`,
                                           state: { pageData: page },
                                         });
                                       } else {
@@ -794,11 +808,11 @@ function PageBuilder() {
                 if (publishSuccess?.status === true) {
                   setThemeListModal(false);
                   setPublishSuccess(null);
-                  navigate({ to: `/page-builder${window.location.search}` });
+                  navigate({ href: `/page-builder${window.location.search}` });
                 }
                 setInternalName("");
                 setThemeListModal(false);
-                navigate({ to: `/page-builder${window.location.search}` });
+                navigate({ href: `/page-builder${window.location.search}` });
               }}
               title={
                 <Text as="h2" variant="headingMd">
@@ -813,7 +827,7 @@ function PageBuilder() {
                 onAction:
                   publishSuccess?.status === true
                     ? () => {
-                        navigate({ to: `/page-builder${location.search}` });
+                        navigate({ href: `/page-builder${location.search}` });
                         setThemeListModal(false), setPublishSuccess(null);
                       }
                     : publishTemplate,
@@ -845,7 +859,7 @@ function PageBuilder() {
                           <List.Item>
                             Go to{" "}
                             <Link
-                              url={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
+                              to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                               target="blank"
                             >
                               Theme Customizer
@@ -1145,6 +1159,7 @@ function PageBuilder() {
                 )}
               </Modal.Section>
             </Modal>
+            <Layout.Section></Layout.Section>
             <Layout.Section></Layout.Section>
           </Layout>
         )}

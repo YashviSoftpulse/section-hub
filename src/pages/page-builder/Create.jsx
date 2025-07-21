@@ -45,11 +45,8 @@ import {
 } from "@shopify/polaris-icons";
 import { ConfirmationModal, SectionCard } from "../../components";
 import Nodata from "/assets/nodata.svg";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { setPageSections } from "../../redux/action";
 import { useNavigate } from "@tanstack/react-router";
-
+import { useQuery } from "@tanstack/react-query";
 
 function Create() {
   const [themeList, setThemeList] = useState([]);
@@ -67,7 +64,7 @@ function Create() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [viewingSection, setViewingSection] = useState(null);
-  const [sort, setSort] = useState("Old-New");
+  const [sort, setSort] = useState("newArrival");
   const [themeModal, setThemeModal] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
   const [active, setActive] = useState(false);
@@ -83,7 +80,6 @@ function Create() {
   const [saveLoader, setSaveLoader] = useState(false);
   const navigate = useNavigate();
   const [discardModal, setIsDiscardModal] = useState(false);
-  const handleSortChange = useCallback((value) => setSort(value), []);
   const [IsMobileView, setIsMobileView] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [filterCounts, setFilterCounts] = useState({});
@@ -93,8 +89,7 @@ function Create() {
   const urlParams = new URLSearchParams(window.location.search);
   const SHOP = urlParams.get("shop");
   const nodomainShop = SHOP?.replace(".myshopify.com", "");
-  const dispatch = useDispatch();
-  const sectionsData = useSelector((state) => state.sections.pageSections);
+  const [sectionsData, setSectionsData] = useState([]);
 
   const Filter = [
     "Banner",
@@ -118,11 +113,8 @@ function Create() {
     "Marquee",
     "Newsletter",
     "Timeline",
-  ];
-
-  const options = [
-    { label: "Old-New", value: "Old-New" },
-    { label: "New-Old", value: "New-Old" },
+    "Back to top",
+    "Compare",
   ];
 
   const ThemeListing = async () => {
@@ -140,35 +132,37 @@ function Create() {
 
   useEffect(() => {
     const modalElement = document.querySelector(".Polaris-Modal-Dialog__Modal");
-
     if (addSectionModalOpen) {
       modalElement.classList.add("section-img-modal");
     }
+    ThemeListing();
   }, [addSectionModalOpen, preview]);
 
-  const fetchListingData = async () => {
-    const formdata = new FormData();
-    formdata.append("filter", "");
-    formdata.append("sort", "bestSeller");
-    formdata.append("type", "sections");
-    formdata.append("page_builder", true);
-    const response = await fetchData(getApiURL(`/listing`), formdata);
-    if (response.status) {
-      dispatch(setPageSections(response.data));
-      const today = new Date().toISOString().split("T")[0];
-      sessionStorage.setItem("pageApiCallDate", today);
-    }
-  };
+  const { data: listingApiData, isLoading: isListingApiCall } = useQuery({
+    queryKey: ["listing", sort],
+    queryFn: async () => {
+      const formdata = new FormData();
+      formdata.append("filter", "all");
+      formdata.append("sort", sort);
+      formdata.append("type", "sections");
+      formdata.append("page_builder", true);
+      const response = await fetchData(getApiURL("/listing"), formdata);
+      return response;
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  const options = [
+    { label: "Old to New", value: "bestSeller" },
+    { label: "New to Old", value: "newArrival" },
+  ];
 
   useEffect(() => {
-    const storedDate = sessionStorage.getItem("pageApiCallDate");
-    const today = new Date().toISOString().split("T")[0];
-
-    if (!storedDate || storedDate !== today) {
-      fetchListingData();
+    if (listingApiData) {
+      setSectionsData(listingApiData?.data || []);
     }
-    ThemeListing();
-  }, [searchTerm, sort]);
+  }, [listingApiData]);
 
   const handleViewIconClick = async (section) => {
     setViewingSection(section);
@@ -206,15 +200,7 @@ function Create() {
       );
     }
 
-    if (
-      searchTerm === "" &&
-      selectedFilters.length === 0 &&
-      sort === "Old-New"
-    ) {
-      filtered = sectionsData;
-    }
-    const sorted = sort === "New-Old" ? [...filtered].reverse() : filtered;
-    setFilteredData(sorted);
+    setFilteredData(filtered);
 
     const counts = Filter.reduce((acc, filter) => {
       acc[filter] = sectionsData.filter((section) =>
@@ -241,11 +227,7 @@ function Create() {
       setNoResultsFound(false);
       setNoResultsMessage("");
     }
-  }, [sectionsData, searchTerm, selectedFilters, sort]);
-
-  const clearSearch = useCallback(() => {
-    setSearchTerm("");
-  }, [sort]);
+  }, [sectionsData, searchTerm, selectedFilters]);
 
   const handleFilterChange = (filter) => {
     setSelectedFilters((prevFilters) =>
@@ -432,9 +414,13 @@ function Create() {
     handleAddSectionModal();
   };
 
+  const clearSearch = useCallback(() => {
+    setSearchTerm("");
+  }, []);
+
   return (
     <Page
-   subtitle="
+      subtitle="
           Build faster, sell smarter — unlock beautiful sections, craft standout
           pages, and elevate your brand."
       title={
@@ -456,7 +442,7 @@ function Create() {
       backAction={{
         onAction: () =>
           navigate({
-            to: `/page-builder${window.location.search}`,
+            href: `/page-builder${window.location.search}`,
           }),
       }}
       secondaryActions={
@@ -511,9 +497,18 @@ function Create() {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                     >
-                                      <InlineStack
-                                        align="space-between"
-                                        gap={200}
+                                      <div
+                                        class="Polaris-InlineStack"
+                                        style={{
+                                          "--pc-inline-stack-wrap": "wrap",
+                                          "--pc-inline-stack-gap-xs":
+                                            "var(--p-space-200)",
+                                          "--pc-inline-stack-flex-direction-xs":
+                                            "row",
+                                          "--pc-inline-stack-align":
+                                            "space-between",
+                                          alignItems: "baseline",
+                                        }}
                                       >
                                         <InlineStack gap={200}>
                                           <Icon source={DragHandleIcon} />
@@ -533,7 +528,7 @@ function Create() {
                                             }
                                           />
                                         </Tooltip>
-                                      </InlineStack>
+                                      </div>
                                     </div>
                                   )}
                                 </Draggable>
@@ -592,19 +587,24 @@ function Create() {
                             />
                           </InlineStack> */}
 
-                          {selectedSection.map((section, index) => (
-                            <img
-                              alt={section.name}
-                              key={index}
-                              width="100%"
-                              height="100%"
-                              style={{
-                                objectFit: "cover",
-                                objectPosition: "center",
-                              }}
-                              src={section.page_builder_preview_img[0]}
-                            />
-                          ))}
+                          {selectedSection.map(
+                            (section, index) => (
+                              console.log("section", section),
+                              (
+                                <img
+                                  alt={section.name}
+                                  key={index}
+                                  width="100%"
+                                  height="100%"
+                                  style={{
+                                    objectFit: "cover",
+                                    objectPosition: "center",
+                                  }}
+                                  src={section?.page_builder_preview_img[0]}
+                                />
+                              )
+                            )
+                          )}
                         </BlockStack>
                       </div>
                     )}
@@ -651,7 +651,9 @@ function Create() {
                 minWidth: "33.25rem",
               }}
             >
-              <InlineStack gap={200}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
                 <Button
                   variant="monochromePlain"
                   size="micro"
@@ -662,14 +664,14 @@ function Create() {
                   icon={ArrowLeftIcon}
                 />
                 <Text>{viewingSection.name}</Text>
-              </InlineStack>
-              <InlineStack
-                gap={200}
-                alignment="center"
+              </div>
+              <div
+                class="Polaris-InlineStack"
                 style={{
-                  position: "absolute",
-                  left: "50%",
-                  transform: "translateX(-50%)",
+                  "--pc-inline-stack-wrap": "wrap",
+                  "--pc-inline-stack-gap-xs": "var(--p-space-200)",
+                  "--pc-inline-stack-flex-direction-xs": "row",
+                  gap: "5px",
                 }}
               >
                 <Button
@@ -684,7 +686,7 @@ function Create() {
                 >
                   <Icon source={MobileIcon} />
                 </Button>
-              </InlineStack>
+              </div>
             </div>
           ) : (
             "Add Sections"
@@ -729,22 +731,9 @@ function Create() {
             )
           ) : (
             <BlockStack gap={300}>
-              {/* <InlineStack align="space-between"> */}
               <Text variant="headingMd" as="h6">
                 Sections
               </Text>
-
-              {/* <InlineStack align="end" gap={200}>
-                  <Select
-                    label="Sort by"
-                    labelInline
-                    options={options}
-                    onChange={(value) => handleSortChange(value)}
-                    value={sort}
-                  />
-                </InlineStack> */}
-              {/* </InlineStack> */}
-
               <TextField
                 fullWidth
                 value={searchTerm}
@@ -764,10 +753,10 @@ function Create() {
                 }
                 connectedRight={
                   <Select
-                    label={`Sort by : ${sort}`}
+                    label="Sort by :"
                     labelInline
                     options={options}
-                    onChange={(value) => handleSortChange(value)}
+                    onChange={(value) => setSort(value)}
                     value={sort}
                   />
                 }
@@ -858,7 +847,7 @@ function Create() {
           if (publishSuccess?.status === "true") {
             setThemeModal(false);
             setPublishSuccess(null);
-            navigate(`/page-builder${location.search}`);
+            navigate({ href: `/page-builder${location.search}` });
           }
           setThemeModal(false);
         }}
@@ -877,7 +866,9 @@ function Create() {
                   onAction: () => {
                     setThemeModal(false);
                     setPublishSuccess(null);
-                    navigate({ to: `/page-builder${window.location.search}` });
+                    navigate({
+                      href: `/page-builder${window.location.search}`,
+                    });
                   },
                 },
                 ...(selectedTheme.role === "main"
@@ -927,7 +918,7 @@ function Create() {
                     <List.Item>
                       Go to{" "}
                       <Link
-                        url={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
+                        to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                         target="blank"
                       >
                         Theme Customizer
@@ -944,7 +935,7 @@ function Create() {
                     <Button
                       onClick={() => {
                         navigate({
-                          pathname: "/page-builder",
+                          href: "/page-builder",
                           search: window.location.search,
                         });
                       }}

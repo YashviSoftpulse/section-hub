@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import {
   BlockStack,
-  Grid,
   Icon,
   Layout,
   Modal,
@@ -28,7 +27,6 @@ import {
   Card,
   Divider,
   Checkbox,
-  FooterHelp,
 } from "@shopify/polaris";
 import { SectionCard, Skeleton_Page } from "../components";
 import { fetchData, getApiURL, MyEncryption } from "../action";
@@ -36,22 +34,21 @@ import { DesktopIcon, MobileIcon, XIcon } from "@shopify/polaris-icons";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import Nodata from "/assets/nodata.svg";
-import { setSections } from "../redux/action";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { Link, useNavigate } from "@tanstack/react-router";
+// import { setSections } from "../redux/action";
+// import { useDispatch } from "react-redux";
+// import { useSelector } from "react-redux";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 function Library() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
   const [themeList, setThemeList] = useState([]);
   const [themeListModal, setThemeListModal] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [modalSectionId, setModalSectionId] = useState(null);
-  const [sort, setSort] = useState("Old-New");
+  const [sort, setSort] = useState("newArrival");
   const [IsMobileView, setIsMobileView] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef(null);
@@ -62,15 +59,16 @@ function Library() {
   const [preview, setPreview] = useState(null);
   const [trackTabChange, setTrackTabChange] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [filteredSections, setFilteredSections] = useState([]);
   const urlParams = new URLSearchParams(window.location.search);
   const encryptor = new MyEncryption();
   const SHOP = urlParams.get("shop");
   const nodomainShop = SHOP?.replace(".myshopify.com", "");
   const [filterCounts, setFilterCounts] = useState({});
   const [noResultsFound, setNoResultsFound] = useState(false);
+  const [sectionsData, setSectionsData] = useState([]);
   const iframeRef = useRef(null);
-  const dispatch = useDispatch();
-  const sectionsData = useSelector((state) => state.sections.sections);
+
   const Filter = [
     "Banner",
     "Video",
@@ -93,15 +91,23 @@ function Library() {
     "Marquee",
     "Newsletter",
     "Timeline",
+    "Back to top",
+    "Compare",
   ];
-  const navigate = useNavigate();
 
-  const handleNavigation = () => {
-    navigate(
-      "https://softpulseinfotech.com/shopify-theme-customization?utm_source=shopify_sectionhub_plugin&utm_medium=referral&utm_campaign=custom_work",
-      { target: "_blank" }
-    );
-  };
+  const { data: listingApiData, isLoading: isListingApiCall } = useQuery({
+    queryKey: ["listing", sort],
+    queryFn: async () => {
+      const formdata = new FormData();
+      formdata.append("filter", "all");
+      formdata.append("sort", sort);
+      formdata.append("type", "sections");
+      const response = await fetchData(getApiURL("/listing"), formdata);
+      return response;
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 
   const handleBannerButtonClick = () => {
     setAppStatus((prev) => ({
@@ -130,7 +136,7 @@ function Library() {
   }, [trackTabChange]);
 
   useEffect(() => {
-    if (!lazyContentRefs.current.length) return;
+    if (!lazyContentRefs.current?.length) return;
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -148,7 +154,7 @@ function Library() {
     return () => {
       observer.disconnect();
     };
-  }, [appStatus, filteredData, preview]);
+  }, [appStatus, filteredSections, preview]);
 
   const lazyContentRefs = useRef([]);
   const addToRefs = (el) => {
@@ -158,41 +164,15 @@ function Library() {
   };
 
   const options = [
-    { label: "Old to New", value: "Old-New" },
-    { label: "New to Old", value: "New-Old" },
+    { label: "Old to New", value: "bestSeller" },
+    { label: "New to Old", value: "newArrival" },
   ];
-
-  const {
-    data: listingApiData,
-    refetch,
-    isPending: isListingApiCall,
-  } = useQuery({
-    queryKey: ["listing"],
-    queryFn: async () => {
-      const formdata = new FormData();
-      formdata.append("filter", "");
-      formdata.append("sort", "bestSeller");
-      formdata.append("type", "sections");
-      const response = await fetchData(getApiURL("/listing"), formdata);
-      return response;
-    },
-    staleTime: 0,
-    refetchOnMount: true,
-  });
-
-  useEffect(() => {
-    if (sectionsData.length === 0) {
-      refetch();
-    }
-  }, [sectionsData, refetch]);
 
   useEffect(() => {
     if (listingApiData) {
-      dispatch(setSections(listingApiData.data));
-      const today = new Date().toISOString().split("T")[0];
-      sessionStorage.setItem("sectionApiCallDate", today);
+      setSectionsData(listingApiData?.data || []);
     }
-  }, [listingApiData, dispatch]);
+  }, [listingApiData]);
 
   const { data: appStatusData, isPending: isApicall } = useQuery({
     queryKey: ["app_status"],
@@ -232,22 +212,9 @@ function Library() {
     }
   }, [themeListData]);
 
-  useEffect(() => {
-    const storedDate = sessionStorage.getItem("sectionApiCallDate");
-    const today = new Date().toISOString()?.split("T")[0];
-
-    if (!storedDate || storedDate !== today) {
-      listingApiData;
-    }
-  }, [searchTerm, sort]);
-
   const handleSearch = (value) => {
     setSearchTerm(value);
   };
-
-  const handleSortChange = useCallback((value) => {
-    setSort(value);
-  }, []);
 
   const handleFilterChange = (filter) => {
     setSelectedFilters((prevFilters) =>
@@ -258,7 +225,7 @@ function Library() {
   };
 
   useEffect(() => {
-    let filtered = sectionsData;
+    let filtered = [...sectionsData];
 
     if (searchTerm) {
       filtered = filtered.filter((section) =>
@@ -269,97 +236,55 @@ function Library() {
     if (selectedFilters.length > 0) {
       filtered = filtered.filter((section) =>
         selectedFilters.some((filter) => {
-          if (filter === "Collection") {
-            return (
-              section?.name?.toLowerCase().includes("collection") ||
-              section?.name?.toLowerCase().includes("category")
-            );
-          } else if (filter === "Image") {
-            return (
-              section?.name?.toLowerCase().includes("image") ||
-              section?.name?.toLowerCase().includes("brand")
-            );
-          } else if (filter === "Tabs") {
-            return (
-              section?.name?.toLowerCase().includes("tabs") ||
-              section?.name?.toLowerCase().includes("tab")
-            );
-          } else if (filter === "Newsletter") {
-            return (
-              section?.name?.toLowerCase().includes("newsletter") ||
-              section?.name?.toLowerCase().includes("welcome")
-            );
+          const name = section?.name?.toLowerCase();
+          switch (filter) {
+            case "Collection":
+              return name.includes("collection") || name.includes("category");
+            case "Image":
+              return name.includes("image") || name.includes("brand");
+            case "Tabs":
+              return name.includes("tabs") || name.includes("tab");
+            case "Newsletter":
+              return name.includes("newsletter") || name.includes("welcome");
+            default:
+              return name.includes(filter.toLowerCase());
           }
-          return section?.name?.toLowerCase().includes(filter.toLowerCase());
         })
       );
     }
 
-    if (
-      searchTerm === "" &&
-      selectedFilters.length === 0 &&
-      sort === "Old-New"
-    ) {
-      filtered = sectionsData;
-    }
-    const sorted = sort === "New-Old" ? [...filtered].reverse() : filtered;
-    setFilteredData(sorted);
-
-    // const category = sectionsData.filter((section) => section.name === "Category showcase");
-    // localStorage.setItem("filteredSections", JSON.stringify(category));
-    // setCatogory(category);
-
-    // if (selectedFilters.includes('Collection')) {
-    //   setFilteredData((prevData) => {
-    //     setFilterCounts((prevCounts) => ({
-    //       ...prevCounts,
-    //       Collection: prevCounts.Collection ? prevCounts.Collection + 1 : 1,
-    //     }));
-
-    //     return [...prevData, ...category];
-    //   });
-    // }
+    setFilteredSections(filtered);
 
     const counts = Filter.reduce((acc, filter) => {
       acc[filter] = sectionsData?.filter((section) => {
-        if (filter === "Collection") {
-          return (
-            section?.name?.toLowerCase().includes("collection") ||
-            section?.name?.toLowerCase().includes("category")
-          );
-        } else if (filter === "Image") {
-          return (
-            section?.name?.toLowerCase().includes("image") ||
-            section?.name?.toLowerCase().includes("brand")
-          );
-        } else if (filter === "Tabs") {
-          return (
-            section?.name?.toLowerCase().includes("tabs") ||
-            section?.name?.toLowerCase().includes("tab")
-          );
-        } else if (filter === "Newsletter") {
-          return (
-            section?.name?.toLowerCase().includes("newsletter") ||
-            section?.name?.toLowerCase().includes("welcome")
-          );
+        const name = section?.name?.toLowerCase();
+        switch (filter) {
+          case "Collection":
+            return name.includes("collection") || name.includes("category");
+          case "Image":
+            return name.includes("image") || name.includes("brand");
+          case "Tabs":
+            return name.includes("tabs") || name.includes("tab");
+          case "Newsletter":
+            return name.includes("newsletter") || name.includes("welcome");
+          default:
+            return name.includes(filter.toLowerCase());
         }
-        return section?.name?.toLowerCase().includes(filter.toLowerCase());
       }).length;
       return acc;
     }, {});
     setFilterCounts(counts);
 
-    const hasMatchingFilters = selectedFilters?.some(
-      (filter) => counts[filter] > 0
-    );
+    const hasMatches = selectedFilters.some((filter) => counts[filter] > 0);
+
     if (searchTerm && filtered.length === 0) {
       setNoResultsFound(true);
-    } else if (!hasMatchingFilters && filtered?.length === 0) {
+    } else if (!hasMatches && filtered.length === 0) {
       setNoResultsFound(true);
     } else {
       setNoResultsFound(false);
     }
-  }, [sectionsData, searchTerm, selectedFilters, sort]);
+  }, [sectionsData, searchTerm, selectedFilters]);
 
   const clearSearch = useCallback(() => {
     setSearchTerm("");
@@ -407,7 +332,6 @@ function Library() {
     const preview = await fetchData(getApiURL(`/section-preview`), formdatas);
     setIsImageLoading(false);
     if (preview.status === true) {
-      console.log("preview", preview);
       setPreview(preview);
     }
   };
@@ -432,10 +356,10 @@ function Library() {
           pages, and elevate your brand."
         primaryAction={
           <Select
-            label="Sort by"
+            label="Sort by :"
             labelInline
             options={options}
-            onChange={(value) => handleSortChange(value)}
+            onChange={(value) => setSort(value)}
             value={sort}
           />
         }
@@ -520,11 +444,9 @@ function Library() {
                             {Filter.map((filter) => (
                               <Checkbox
                                 key={filter}
-                                label={`${filter} ${
-                                  filterCounts[filter] > 0
-                                    ? `(${filterCounts[filter]})`
-                                    : `(0)`
-                                }`}
+                                label={`${filter} (${
+                                  filterCounts[filter] || 0
+                                })`}
                                 checked={selectedFilters.includes(filter)}
                                 onChange={() => handleFilterChange(filter)}
                               />
@@ -569,7 +491,7 @@ function Library() {
                               "--pc-grid-columns-xl": 2,
                             }}
                           >
-                            {filteredData?.map((section, index) => {
+                            {filteredSections?.map((section, index) => {
                               return (
                                 <div
                                   key={index}
@@ -599,8 +521,10 @@ function Library() {
                     setSelectedFilters([]);
                     setThemeListModal(false);
                     setPublishSuccess(null);
+                    setIsPublishing(false);
                   }
                   setThemeListModal(false);
+                  setIsPublishing(false);
                 }}
                 title={
                   <Text as="h2" variant="headingMd">
@@ -653,7 +577,7 @@ function Library() {
                               <List.Item>
                                 Go to{" "}
                                 <Link
-                                  url={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`}
+                                  to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`}
                                   target="blank"
                                 >
                                   Theme Customizer
@@ -888,15 +812,25 @@ function Library() {
                     <Text variant="headingLg" as="span">
                       {selectedSection?.name || "Section Details"}
                     </Text>
-                    <InlineStack
+                    <div
+                      class="Polaris-InlineStack"
+                      style={{
+                        "--pc-inline-stack-wrap": "wrap",
+                        "--pc-inline-stack-gap-xs": "var(--p-space-200)",
+                        "--pc-inline-stack-flex-direction-xs": "row",
+                        gap: "5px",
+                      }}
+                    >
+                      {/* <InlineStack
                       gap={200}
                       alignment="center"
                       style={{
                         position: "absolute",
                         left: "50%",
                         transform: "translateX(-50%)",
+                        gap:'10px'
                       }}
-                    >
+                    > */}
                       <Button
                         onClick={() => setIsMobileView(false)}
                         pressed={IsMobileView ? false : true}
@@ -909,7 +843,7 @@ function Library() {
                       >
                         <Icon source={MobileIcon} />
                       </Button>
-                    </InlineStack>
+                    </div>
                   </div>
                 }
                 secondaryActions={{
@@ -971,43 +905,31 @@ function Library() {
                     </div>
                   ) : (
                     <BlockStack gap={400}>
-                      {preview?.data?.length > 0 &&
-                        (console.log("preview", preview),
-                        (
-                          <Swiper
-                            navigation={true}
-                            modules={[Navigation]}
-                            onSlideChange={(swiper) =>
-                              setCurrentSlide(swiper.activeIndex)
-                            }
-                            onSwiper={(swiper) => {
-                              swiperRef.current = swiper;
-                            }}
-                          >
-                            {preview?.data?.map(
-                              (img, index) => (
-                                console.log("img", img),
-                                (
-                                  <SwiperSlide key={index}>
-                                    <div
-                                      className="lazyContent"
-                                      ref={addToRefs}
-                                    >
-                                      <img
-                                        src={img}
-                                        alt={`Section Preview Image ${
-                                          index + 1
-                                        }`}
-                                        onLoad={() => setIsImageLoading(false)}
-                                        fetchPriority="high"
-                                      />
-                                    </div>
-                                  </SwiperSlide>
-                                )
-                              )
-                            )}
-                          </Swiper>
-                        ))}
+                      {preview?.data?.length > 0 && (
+                        <Swiper
+                          navigation={true}
+                          modules={[Navigation]}
+                          onSlideChange={(swiper) =>
+                            setCurrentSlide(swiper.activeIndex)
+                          }
+                          onSwiper={(swiper) => {
+                            swiperRef.current = swiper;
+                          }}
+                        >
+                          {preview?.data?.map((img, index) => (
+                            <SwiperSlide key={index}>
+                              <div className="lazyContent" ref={addToRefs}>
+                                <img
+                                  src={img}
+                                  alt={`Section Preview Image ${index + 1}`}
+                                  onLoad={() => setIsImageLoading(false)}
+                                  fetchPriority="high"
+                                />
+                              </div>
+                            </SwiperSlide>
+                          ))}
+                        </Swiper>
+                      )}
                       {preview?.data?.length > 1 && (
                         <div
                           className="Polaris-InlineStack"
@@ -1024,7 +946,7 @@ function Library() {
                                 swiperRef.current.slidePrev();
                               }
                             }}
-                            hasNext={currentSlide < preview?.data.length - 1}
+                            hasNext={currentSlide < preview?.data?.length - 1}
                             onNext={() => {
                               if (swiperRef.current) {
                                 swiperRef.current.slideNext();

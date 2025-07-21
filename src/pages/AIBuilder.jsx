@@ -7,61 +7,50 @@
 //   Text,
 //   BlockStack,
 //   InlineStack,
+//   Bleed,
 // } from "@shopify/polaris";
+// import { useQuery } from "@tanstack/react-query";
 // import { useNavigate } from "@tanstack/react-router";
-
-// const dummyRows = [
-//   {
-//     id: "1",
-//     prompt: "Generate product title for red shoes",
-//     credit: 2,
-//     date: "2025-06-20",
-//   },
-//   {
-//     id: "2",
-//     prompt: "Summarize customer review",
-//     credit: 1,
-//     date: "2025-06-21",
-//   },
-//   {
-//     id: "3",
-//     prompt: "Rewrite SEO description for summer collection",
-//     credit: 3,
-//     date: "2025-06-21",
-//   },
-//   {
-//     id: "4",
-//     prompt: "Generate Instagram caption",
-//     credit: 1,
-//     date: "2025-06-22",
-//   },
-//   {
-//     id: "5",
-//     prompt: "Translate product spec to Spanish",
-//     credit: 2,
-//     date: "2025-06-23",
-//   },
-// ];
+// import { useState } from "react";
+// import { fetchJsonData, getApiURL } from "../action";
 
 // const AIBuilder = () => {
+//   const navigate = useNavigate();
 //   const resourceName = {
 //     singular: "entry",
 //     plural: "entries",
 //   };
-//   const navigate = useNavigate();
+//   const [page, setPage] = useState(1);
+//   const [limit] = useState(10);
+//   const [sort] = useState("desc");
+
+//   const { data, isLoading, isError } = useQuery({
+//     queryKey: ["usedCredits", page, limit, sort],
+//     queryFn: async () => {
+//       const formData = new FormData();
+//       formData.append("limit", limit.toString());
+//       formData.append("page", page.toString());
+//       formData.append("sort", sort);
+
+//       const res = await fetchJsonData(getApiURL("/get-used-credits"), formData);
+//       return res.json();
+//     },
+//     staleTime: 0,
+//     refetchOnMount: true,
+//   });
+
+//   const rows = data?.data || [];
 
 //   const { selectedResources, allResourcesSelected, handleSelectionChange } =
-//     useIndexResourceState(dummyRows);
-
-//   const totalCredit = dummyRows.reduce((sum, row) => sum + row.credit, 0);
-//   const uniqueDays = new Set(dummyRows.map(row => row.date)).size;
+//     useIndexResourceState(rows);
 
 //   return (
 //     <Page
 //       title="AI Section Builder"
 //       primaryAction={{
 //         content: "Generate with AI",
-//         onAction:() => navigate({to : `/ai-builder/generate${window.location.search}`}),
+//         onAction: () =>
+//           navigate({ to: `/ai-builder/generate${window.location.search}` }),
 //       }}
 //     >
 //       <Layout>
@@ -69,37 +58,53 @@
 //           <Card>
 //             <BlockStack gap={300}>
 //               <Text variant="headingMd">Credit Usage</Text>
-//               <InlineStack gap={400}>
-//                 <Text>Total Credit Used: {totalCredit}</Text>
-//                 <Text>Number of Days: {uniqueDays}</Text>
-//               </InlineStack>
-//               <IndexTable
-//                 resourceName={resourceName}
-//                 itemCount={dummyRows.length}
-//                 selectedItemsCount={
-//                   allResourcesSelected ? "All" : selectedResources.length
-//                 }
-//                 onSelectionChange={handleSelectionChange}
-//                 headings={[
-               
-//                   { title: "Date" },
-//                   { title: "Credit Used" },
-//                 ]}
-//                 selectable={false}
-//               >
-//                 {dummyRows.map(({ id, prompt, credit, date }, index) => (
-//                   <IndexTable.Row
-//                     id={id}
-//                     key={id}
-//                     selected={selectedResources.includes(id)}
-//                     position={index}
+//               {isLoading && <Text>Loading...</Text>}
+//               {isError && (
+//                 <Text tone="critical">Error loading credit usage.</Text>
+//               )}
+
+//               {!isLoading && !isError && (
+//                 <Bleed marginInline={400}>
+//                   <IndexTable
+//                     resourceName={resourceName}
+//                     itemCount={rows.length}
+//                     selectedItemsCount={
+//                       allResourcesSelected ? "All" : selectedResources.length
+//                     }
+//                     onSelectionChange={handleSelectionChange}
+//                     headings={[
+//                       { title: "Sections" },
+//                       { title: "Credit Used" },
+//                       { title: "Created At" },
+//                     ]}
+//                     selectable={false}
 //                   >
-                    
-//                     <IndexTable.Cell>{credit}</IndexTable.Cell>
-//                     <IndexTable.Cell>{date}</IndexTable.Cell>
-//                   </IndexTable.Row>
-//                 ))}
-//               </IndexTable>
+//                     {rows.map(({ id, sections, credits_used, date }, index) => (
+//                       <IndexTable.Row
+//                         id={id}
+//                         key={id}
+//                         selected={selectedResources.includes(id)}
+//                         position={index}
+//                       >
+//                         <IndexTable.Cell>
+//                           <BlockStack gap={100}>
+//                             {sections
+//                               .split(",")
+//                               .map((item) => item.trim())
+//                               .map((file, index) => (
+//                                 <Text variant="bodyMd" as="p" key={index}>
+//                                   {file}
+//                                 </Text>
+//                               ))}
+//                           </BlockStack>
+//                         </IndexTable.Cell>
+//                         <IndexTable.Cell>{credits_used}</IndexTable.Cell>
+//                         <IndexTable.Cell>{date}</IndexTable.Cell>
+//                       </IndexTable.Row>
+//                     ))}
+//                   </IndexTable>
+//                 </Bleed>
+//               )}
 //             </BlockStack>
 //           </Card>
 //         </Layout.Section>

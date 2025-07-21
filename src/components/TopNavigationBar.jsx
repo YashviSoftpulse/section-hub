@@ -38,13 +38,13 @@ export default () => {
     setSelected(selectedTabIndex);
     if (selectedTabIndex === 0) {
       navigate({
-        pathname: "/library",
+        href: "/library",
         search: window.location.search,
       });
     } else if (selectedTabIndex === 1) {
-      navigate({ pathname: "/sections", search: window.location.search });
+      navigate({ href: "/sections", search: window.location.search });
     } else if (selectedTabIndex === 2) {
-      navigate({ pathname: "/help", search: window.location.search });
+      navigate({ href: "/help", search: window.location.search });
     } else {
     }
   }, []);

@@ -99,7 +99,7 @@ function Help() {
                         variant="primary"
                         onClick={() =>
                           navigate({
-                            to: `/sectionLibrary?${new URLSearchParams(
+                            href: `/sectionLibrary?${new URLSearchParams(
                               params
                             )}`,
                           })
@@ -172,7 +172,7 @@ function Help() {
                         variant="primary"
                         onClick={() =>
                           navigate({
-                            to: `/page-builder?${new URLSearchParams(params)}`,
+                            href: `/page-builder?${new URLSearchParams(params)}`,
                           })
                         }
                       >

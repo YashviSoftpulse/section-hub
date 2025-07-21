@@ -962,18 +962,13 @@ import {
   Text,
   BlockStack,
   InlineGrid,
-  MediaCard,
-  Icon,
   Divider,
   Pagination,
   Banner,
   Image,
   Grid,
   VideoThumbnail,
-  SkeletonTabs,
-  SkeletonBodyText,
   IndexTable,
-  LegacyCard,
   Tooltip,
   Box,
   Collapsible,
@@ -1001,6 +996,7 @@ import moment from "moment";
 import { ConfirmationModal } from "../components";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import emptyData from "/assets/empty-data.png";
 
 function MyLibrary() {
   const [dashboardData, setDashboardData] = useState([]);
@@ -1013,18 +1009,16 @@ function MyLibrary() {
   const [currentTemplatePage, setCurrentTemplatePage] = useState(1);
   const [appStatus, setAppStatus] = useState();
   const [showBanner, setShowBanner] = useState(false);
-  const [dropbanner, setDropBanner] = useState(false);
   const [showThemeBanner, setShowThemeBanner] = useState(true);
   const lazyContentRefs = useRef([]);
   const rowsPerPage = 10;
   const encryptor = new MyEncryption();
   const navigate = useNavigate();
+
   const urlParams = new URLSearchParams(window.location.search);
   const SHOP = urlParams.get("shop");
   const params = {};
-  const [openSectionSteps, setOpenSectionSteps] = useState(false);
-  const [openPageSteps, setOpenPageSteps] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(false);
+  const [openSteps, setOpenSteps] = useState(false);
 
   const { data: appStatusData, isPending: isLoading } = useQuery({
     queryKey: ["app_status"],
@@ -1345,203 +1339,165 @@ function MyLibrary() {
                         <Text variant="headingMd" as="h6">
                           Quick Guide
                         </Text>
-                        {/* <InlineStack gap={100}>
-                          <Button
-                            onClick={() => setOpenDropdown((prev) => !prev)}
-                            icon={openDropdown ? CaretUpIcon : CaretDownIcon}
-                          />
-                          {openDropdown && ( */}
-                            <Button
-                              onClick={handleDismiss}
-                              icon={XIcon}
-                              accessibilityLabel="Close"
-                              variant="plain"
-                            />
-                          {/* )}
-                        </InlineStack> */}
+                        <Button
+                          tone="critical"
+                          variant="monochromePlain"
+                          onClick={handleDismiss}
+                          icon={XIcon}
+                        ></Button>
                       </InlineStack>
-                      {/* {openDropdown && ( */}
-                        <InlineGrid gap={400} columns={2}>
-                          <Card padding={0}>
-                            <BlockStack gap={400}>
-                              <div className="dashboard-video">
-                                <VideoThumbnail
-                                  videoLength={142}
-                                  thumbnailUrl={
-                                    "https://cdn.shopify.com/s/files/1/0896/6049/0015/files/Section_Banner.png?v=1751365256"
-                                  }
-                                  onClick={() =>
-                                    window.open("https://youtu.be/eJC9415VtC4")
-                                  }
-                                  loading={true}
-                                />
-                              </div>
-                              <InlineStack align="space-between">
-                                <Box paddingInline={400}>
-                                  <Text variant="headingMd" as="h6">
-                                    Steps: How to Add Sections
-                                  </Text>
-                                </Box>
-                                <Box paddingInline={400}>
-                                  <Button
-                                    variant="plain"
-                                    onClick={() =>
-                                      setOpenSectionSteps((prev) => !prev)
-                                    }
-                                    icon={
-                                      openSectionSteps
-                                        ? CaretUpIcon
-                                        : CaretDownIcon
-                                    }
-                                  />
-                                </Box>
-                              </InlineStack>
-                            </BlockStack>
-                            <Collapsible
-                              open={openSectionSteps}
-                              id="section-collapsible"
-                              transition={{
-                                duration: "500ms",
-                                timingFunction: "ease-in-out",
-                              }}
-                              expandOnPrint
-                            >
+                      <InlineGrid gap={400} columns={2}>
+                        <Card padding={0}>
+                          <BlockStack gap={400}>
+                            <div className="dashboard-video">
+                              <VideoThumbnail
+                                videoLength={142}
+                                thumbnailUrl={
+                                  "https://cdn.shopify.com/s/files/1/0896/6049/0015/files/Section_Banner.png?v=1751365256"
+                                }
+                                onClick={() =>
+                                  window.open("https://youtu.be/eJC9415VtC4")
+                                }
+                                loading={true}
+                              />
+                            </div>
+                            <InlineStack align="space-between">
                               <Box paddingInline={400}>
-                                <ol>
-                                  <BlockStack gap={100}>
-                                    <li>
-                                      Browse our{" "}
-                                      <strong>"Section Library"</strong>
-                                    </li>
-                                    <li>
-                                      Find a suitable section and check its
-                                      preview.
-                                    </li>
-                                    <li>
-                                      Click <strong>"Add Section"</strong> and
-                                      select your theme.
-                                    </li>
-                                    <li>
-                                      Click <strong>"Add to Theme"</strong> to
-                                      complete the process.
-                                    </li>
-                                  </BlockStack>
-                                </ol>
+                                <Text variant="headingMd" as="h6">
+                                  Steps: How to Add Sections
+                                </Text>
                               </Box>
-                              <Box padding={400}>
-                                <Button
-                                  variant="primary"
-                                  onClick={() =>
-                                    navigate({
-                                      to: `/sectionLibrary?${new URLSearchParams(
-                                        params
-                                      )}`,
-                                    })
-                                  }
-                                >
-                                  View Sections
-                                </Button>
+                              <Box paddingInline={400}>
                                 <Button
                                   variant="plain"
-                                  onClick={() => setOpenSectionSteps(false)}
-                                  style={{ marginLeft: 8 }}
-                                >
-                                  Close
-                                </Button>
-                              </Box>
-                            </Collapsible>
-                            {!openSectionSteps && <Box padding={200}></Box>}
-                          </Card>
-                          <Card padding={0}>
-                            <BlockStack gap={400}>
-                              <div className="dashboard-video">
-                                <VideoThumbnail
-                                  videoLength={100}
-                                  thumbnailUrl={
-                                    "https://cdn.shopify.com/s/files/1/0896/6049/0015/files/pages-banner.png?v=1751365344"
-                                  }
-                                  onClick={() =>
-                                    window.open("https://youtu.be/Dc6bdN4Mbpw")
-                                  }
+                                  onClick={() => setOpenSteps((prev) => !prev)}
+                                  icon={openSteps ? CaretUpIcon : CaretDownIcon}
                                 />
-                              </div>
-                              <InlineStack align="space-between">
-                                <Box paddingInline={400}>
-                                  <Text variant="headingMd" as="h6">
-                                    Steps: How to Create Pages
-                                  </Text>
-                                </Box>
-                                <Box paddingInline={400}>
-                                  <Button
-                                    variant="plain"
-                                    onClick={() =>
-                                      setOpenPageSteps((prev) => !prev)
-                                    }
-                                    icon={
-                                      openPageSteps
-                                        ? CaretUpIcon
-                                        : CaretDownIcon
-                                    }
-                                  />
-                                </Box>
-                              </InlineStack>
-                            </BlockStack>
-                            <Collapsible
-                              open={openPageSteps}
-                              id="page-collapsible"
-                              transition={{
-                                duration: "500ms",
-                                timingFunction: "ease-in-out",
-                              }}
-                              expandOnPrint
-                            >
-                              <Box paddingInline={400}>
-                                <ol>
-                                  <BlockStack gap={100}>
-                                    <li>
-                                      Browse our <strong>"Page Builder"</strong>
-                                    </li>
-                                    <li>
-                                      Click <strong>Create New Page</strong> and
-                                      define a page name.
-                                    </li>
-                                    <li>
-                                      Browse our <strong>Sections</strong> and
-                                      add sections to your page.
-                                    </li>
-                                    <li>
-                                      Click <strong>Save</strong> to publish
-                                      your page to your theme.
-                                    </li>
-                                  </BlockStack>
-                                </ol>
                               </Box>
-                              <Box padding={400}>
-                                <Button
-                                  variant="primary"
-                                  onClick={() =>
-                                    navigate({
-                                      to: `/page-builder?${new URLSearchParams(
-                                        params
-                                      )}`,
-                                    })
-                                  }
-                                >
-                                  View Pages
-                                </Button>
+                            </InlineStack>
+                          </BlockStack>
+                          <Collapsible
+                            open={openSteps}
+                            id="basic-collapsible"
+                            transition={{
+                              duration: "500ms",
+                              timingFunction: "ease-in-out",
+                            }}
+                            expandOnPrint
+                          >
+                            <Box paddingInline={400}>
+                              <ol>
+                                <BlockStack gap={100}>
+                                  <li>
+                                    Browse our{" "}
+                                    <strong>"Section Library"</strong>
+                                  </li>
+                                  <li>
+                                    Find a suitable section and check its
+                                    preview.
+                                  </li>
+                                  <li>
+                                    Click <strong>"Add Section"</strong> and
+                                    select your theme.
+                                  </li>
+                                  <li>
+                                    Click <strong>"Add to Theme"</strong> to
+                                    complete the process.
+                                  </li>
+                                </BlockStack>
+                              </ol>
+                            </Box>
+                            <Box padding={400}>
+                              <Button
+                                variant="primary"
+                                onClick={() =>
+                                  navigate({
+                                    href: `/sectionLibrary${window.location.search}`,
+                                   search: location.search,
+                                  })
+                                }
+                              >
+                                View Sections
+                              </Button>
+                            </Box>
+                          </Collapsible>
+                          {openSteps === false && <Box padding={200}></Box>}
+                        </Card>
+                        <Card padding={0}>
+                          <BlockStack gap={400}>
+                            <div className="dashboard-video">
+                              <VideoThumbnail
+                                videoLength={100}
+                                thumbnailUrl={
+                                  "https://cdn.shopify.com/s/files/1/0896/6049/0015/files/pages-banner.png?v=1751365344"
+                                }
+                                onClick={() =>
+                                  window.open("https://youtu.be/Dc6bdN4Mbpw")
+                                }
+                              />
+                            </div>
+                            <InlineStack align="space-between">
+                              <Box paddingInline={400}>
+                                <Text variant="headingMd" as="h6">
+                                  Steps: How to Create Pages
+                                </Text>
+                              </Box>
+                              <Box paddingInline={400}>
                                 <Button
                                   variant="plain"
-                                  onClick={() => setOpenPageSteps(false)}
-                                  style={{ marginLeft: 8 }}
-                                >
-                                  Close
-                                </Button>
+                                  onClick={() => setOpenSteps((prev) => !prev)}
+                                  icon={openSteps ? CaretUpIcon : CaretDownIcon}
+                                />
                               </Box>
-                            </Collapsible>
-                            {!openPageSteps && <Box padding={200}></Box>}
-                          </Card>
-                        </InlineGrid>
-                      {/* )} */}
+                            </InlineStack>
+                          </BlockStack>
+                          <Collapsible
+                            open={openSteps}
+                            id="basic-collapsible"
+                            transition={{
+                              duration: "500ms",
+                              timingFunction: "ease-in-out",
+                            }}
+                            expandOnPrint
+                          >
+                            <Box paddingInline={400}>
+                              <ol>
+                                <BlockStack gap={100}>
+                                  <li>
+                                    Browse our <strong>"Page Builder"</strong>
+                                  </li>
+                                  <li>
+                                    Click <strong>Create New Page</strong> and
+                                    define a page name.
+                                  </li>
+                                  <li>
+                                    Browse our <strong>Sections</strong> and add
+                                    sections to your page.
+                                  </li>
+                                  <li>
+                                    Click <strong>Save</strong> to publish your
+                                    page to your theme.
+                                  </li>
+                                </BlockStack>
+                              </ol>
+                            </Box>
+                            <Box padding={400}>
+                              <Button
+                                variant="primary"
+                                onClick={() =>
+                                  navigate({
+                                    href: `/page-builder${window.location.search}`,
+                                    search: location.search,
+                                  })
+                                }
+                              >
+                                View Pages
+                              </Button>
+                            </Box>
+                          </Collapsible>
+                          {openSteps === false && <Box padding={200}></Box>}
+                        </Card>
+                      </InlineGrid>
                     </BlockStack>
                   </Card>
                 </div>
@@ -1560,11 +1516,12 @@ function MyLibrary() {
                     {dashboardData?.sections?.length > 0 && (
                       <InlineStack align="end">
                         <Button
-                          onClick={() =>
+                          onClick={() =>{
+                          
                             navigate({
-                              to: `/sectionLibrary${window.location.search}`,
+                              href: `/sectionLibrary${window.location.search}`,
                               search: location.search,
-                            })
+                            })}
                           }
                         >
                           View All
@@ -1576,22 +1533,14 @@ function MyLibrary() {
                     <Bleed marginInline={400}>
                       {dashboardData?.sections?.length === 0 ? (
                         <BlockStack inlineAlign="center">
-                          <img
-                            style={{ maxHeight: "15rem" }}
-                            src="/assets/empty-data.png"
-                          />
+                          <img style={{ maxHeight: "15rem" }} src={emptyData} />
                           <Text as="h2" tone="subdued" variant="bodyMd">
                             Click{" "}
-                            <Link removeUnderline={true}>
-                              <strong
-                                onClick={() =>
-                                  navigate({
-                                    to: `/sectionLibrary${window.location.search}`,
-                                  })
-                                }
-                              >
-                                Add New Section
-                              </strong>
+                            <Link
+                              removeUnderline={true}
+                              to={`/sectionLibrary${window.location.search}`}
+                            >
+                              <strong>Add New Section</strong>
                             </Link>{" "}
                             to start creating beautiful pages by adding
                             ready-made sections from SectionHub
@@ -1649,8 +1598,7 @@ function MyLibrary() {
                         "_blank"
                       ),
                   }}
-               
-                  onDismiss={() => setShowThemeBanner(false) }
+                  onDismiss={() => setShowThemeBanner(false)}
                 >
                   <BlockStack gap={100}>
                     <Text>We're here to help!</Text>
@@ -1679,7 +1627,8 @@ function MyLibrary() {
                         <Button
                           onClick={() =>
                             navigate({
-                              to: `/page-builder${window.location.search}`,
+                              href: `/page-builder${window.location.search}`,
+                              search : location.search
                             })
                           }
                         >
@@ -1692,22 +1641,14 @@ function MyLibrary() {
                     <Bleed marginInline={400}>
                       {dashboardData?.templates?.length === 0 ? (
                         <BlockStack inlineAlign="center">
-                          <img
-                            style={{ maxHeight: "15rem" }}
-                            src="/assets/empty-data.png"
-                          />
+                          <img style={{ maxHeight: "15rem" }} src={emptyData} />
                           <Text as="h2" tone="subdued" variant="bodyMd">
                             Click{" "}
-                            <Link removeUnderline={true}>
-                              <strong
-                                onClick={() =>
-                                  navigate({
-                                    to: `/page-builder${window.location.search}`,
-                                  })
-                                }
-                              >
-                                Create New Page
-                              </strong>
+                            <Link
+                              removeUnderline={true}
+                              to={`/page-builder${window.location.search}`}
+                            >
+                              <strong>Create New Page</strong>
                             </Link>{" "}
                             to start building your first page and leave a
                             lasting impression on your audience.
@@ -1786,7 +1727,7 @@ function MyLibrary() {
                       Explore our Frequently Asked Questions for quick answers
                       and helpful guidance!
                     </Text>
-                    <Link url={`\helpGuide${location.search}`}>
+                    <Link to={`/helpGuide${location.search}`}>
                       <InlineStack gap={100} align="start">
                         <span class="Polaris-Icon dashboard-icon">
                           <svg
@@ -1828,22 +1769,24 @@ function MyLibrary() {
                       Need assistance? Don't hesitate to contact us with your
                       questions or support requests!
                     </Text>
-                    <Link target="_blank" onClick={openChat}>
-                      <InlineStack gap={100}>
-                        <span class="Polaris-Icon dashboard-icon">
-                          <svg
-                            viewBox="0 0 20 20"
-                            class="Polaris-Icon__Svg"
-                            focusable="false"
-                            aria-hidden="true"
-                          >
-                            <path d="M11.75 3.5a.75.75 0 0 0 0 1.5h2.19l-4.97 4.97a.75.75 0 1 0 1.06 1.06l4.97-4.97v2.19a.75.75 0 0 0 1.5 0v-4a.75.75 0 0 0-.75-.75h-4Z"></path>
-                            <path d="M15 10.967a.75.75 0 0 0-1.5 0v2.783c0 .69-.56 1.25-1.25 1.25h-6c-.69 0-1.25-.56-1.25-1.25v-6c0-.69.56-1.25 1.25-1.25h2.783a.75.75 0 0 0 0-1.5h-2.783a2.75 2.75 0 0 0-2.75 2.75v6a2.75 2.75 0 0 0 2.75 2.75h6a2.75 2.75 0 0 0 2.75-2.75v-2.783Z"></path>
-                          </svg>
-                        </span>
-                        contact support
-                      </InlineStack>
-                    </Link>
+                    <InlineStack align="start">
+                      <Button variant="plain" onClick={openChat}>
+                        <InlineStack gap={100}>
+                          <span class="Polaris-Icon dashboard-icon">
+                            <svg
+                              viewBox="0 0 20 20"
+                              class="Polaris-Icon__Svg"
+                              focusable="false"
+                              aria-hidden="true"
+                            >
+                              <path d="M11.75 3.5a.75.75 0 0 0 0 1.5h2.19l-4.97 4.97a.75.75 0 1 0 1.06 1.06l4.97-4.97v2.19a.75.75 0 0 0 1.5 0v-4a.75.75 0 0 0-.75-.75h-4Z"></path>
+                              <path d="M15 10.967a.75.75 0 0 0-1.5 0v2.783c0 .69-.56 1.25-1.25 1.25h-6c-.69 0-1.25-.56-1.25-1.25v-6c0-.69.56-1.25 1.25-1.25h2.783a.75.75 0 0 0 0-1.5h-2.783a2.75 2.75 0 0 0-2.75 2.75v6a2.75 2.75 0 0 0 2.75 2.75h6a2.75 2.75 0 0 0 2.75-2.75v-2.783Z"></path>
+                            </svg>
+                          </span>
+                          contact support
+                        </InlineStack>
+                      </Button>
+                    </InlineStack>
                   </BlockStack>
                 </Card>
               </InlineGrid>

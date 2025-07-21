@@ -19,18 +19,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import en from "@shopify/polaris/locales/en.json";
 import { NavMenu } from "@shopify/app-bridge-react";
 import { onINP, onLCP } from "web-vitals";
-import { persistor, store } from "./redux/store.js";
-import { PersistGate } from "redux-persist/integration/react";
-import { Provider } from "react-redux";
+// import { persistor, store } from "./redux/store.js";
+// import { PersistGate } from "redux-persist/integration/react";
+// import { Provider } from "react-redux";
 
 onLCP(
   (lcp) => {
     console.log(`Web vitals - LCP in seconds:`, lcp.value / 1000);
     console.log(`Web vitals - LCP details:`, lcp.entries);
-    // Send to analytics if LCP is poor
     if (lcp.value > 2500) {
       console.warn("Poor LCP detected:", lcp.value);
-      // You can send this to your analytics service
     }
   },
   { reportAllChanges: true }
@@ -71,7 +69,7 @@ const rootRoute = createRootRoute({
           Section Library{" "}
         </FastLink>
         <FastLink to={`/page-builder${window.location.search}`}>
-          Page Builder{" "}
+          Page Builder
         </FastLink>
         {/* <FastLink to={`/ai-builder${window.location.search}`}>
           AI Builder{" "}
@@ -104,7 +102,7 @@ export const indexRoute = createRoute({
 export const sectionLibraryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: `/sectionLibrary`,
-  component: lazyRouteComponent(() => import("./pages/SectionLibrary.jsx")),
+  component: lazyRouteComponent(() => import("./pages/SectionLibrary")),
   preload: true,
   pendingComponent: () => (
     <div className="main-page">
@@ -120,7 +118,7 @@ export const sectionLibraryRoute = createRoute({
 export const pageBuilderRoutes = createRoute({
   getParentRoute: () => rootRoute,
   path: `/page-builder`,
-  component: lazyRouteComponent(() => import("./pages/PageBuilder.jsx")),
+  component: lazyRouteComponent(() => import("./pages/PageBuilder")),
   preload: true,
   pendingComponent: () => (
     <div className="main-page">
@@ -136,7 +134,7 @@ export const pageBuilderRoutes = createRoute({
 export const helpGuideRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: `/helpGuide`,
-  component: lazyRouteComponent(() => import("./pages/HelpGuide.jsx")),
+  component: lazyRouteComponent(() => import("./pages/HelpGuide")),
 });
 
 export const createPageRoute = createRoute({
@@ -202,11 +200,11 @@ if (!rootElement.innerHTML) {
   root.render(
     <AppProvider i18n={en}>
       <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
+        {/* <Provider store={store}> */}
+          {/* <PersistGate loading={null} persistor={persistor}> */}
             <RouterProvider router={router} />
-          </PersistGate>
-        </Provider>
+          {/* </PersistGate>
+        </Provider> */}
       </QueryClientProvider>
     </AppProvider>
   );

@@ -32,9 +32,7 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
         onClick={() => handleViewIconClick(section)}
       />
       <BlockStack gap={100}>
-        <InlineStack distribution="equalSpacing">
-          <Text variant="headingSm">{section?.name}</Text>
-        </InlineStack>
+        <Text variant="headingSm">{section?.name}</Text>
         <BlockStack gap={400}>
           <Text variant="bodySm" breakWord={true}>
             {section?.description}

@@ -10,9 +10,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      // core package
       'react-syntax-highlighter',
-      // the style you’re using
       'react-syntax-highlighter/dist/esm/styles/prism/darcula'
     ]
   },
