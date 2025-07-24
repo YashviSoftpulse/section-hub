@@ -104,12 +104,12 @@ function PageBuilder() {
     setSelectedTheme(value);
   };
 
-  const { data: templateListData, isPending: isListingApiCall } = useQuery({
+  const { data: templateListData, refetch: templateList, isPending: isListingApiCall } = useQuery({
     queryKey: ["template_listing"],
     queryFn: async () => {
       const formdata = new FormData();
       const response = await fetchData(getApiURL("/page-builder"), formdata);
-      return response;
+      return await response;
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -213,7 +213,7 @@ function PageBuilder() {
       setLiveConfirmModalOpen(false);
       setLiveLoading(false);
       setSelectedPage(null);
-      TemplateList();
+      templateList();
       shopify.toast.show("Successfully Move to Live", { duration: 2000 });
     }
     setLiveConfirmModalOpen(false);

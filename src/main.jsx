@@ -71,9 +71,9 @@ const rootRoute = createRootRoute({
         <FastLink to={`/page-builder${window.location.search}`}>
           Page Builder
         </FastLink>
-        {/* <FastLink to={`/ai-builder${window.location.search}`}>
+        <FastLink to={`/ai-builder${window.location.search}`}>
           AI Builder{" "}
-        </FastLink> */}
+        </FastLink>
         <FastLink to={`/helpGuide${window.location.search}`}>
           Help Guide{" "}
         </FastLink>
@@ -153,33 +153,33 @@ export const createPageRoute = createRoute({
   ),
 });
 
-// export const aiBuilderRoute = createRoute({
-//   getParentRoute: () => rootRoute,
-//   path: `/ai-builder`,
-//   component: lazyRouteComponent(() => import("./pages/AIBuilder")),
-//   preload: true,
-//   pendingComponent: () => (
-//     <Page
-//       subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout pages, and elevate your brand."
-//       title="AI Builder"
-//     ></Page>
-//   ),
-// });
+export const aiBuilderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: `/ai-builder`,
+  component: lazyRouteComponent(() => import("./pages/AIBuilder")),
+  preload: true,
+  pendingComponent: () => (
+    <Page
+      subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout pages, and elevate your brand."
+      title="AI Builder"
+    ></Page>
+  ),
+});
 
-// export const aiBuilderGenerateRoute = createRoute({
-//   getParentRoute: () => rootRoute,
-//   path: `/ai-builder/generate`,
-//   component: lazyRouteComponent(() =>
-//     import("./pages/ai-builder/Generate")
-//   ),
-//   preload: true,
-//   pendingComponent: () => (
-//     <Page
-//       subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout pages, and elevate your brand."
-//       title="AI Builder"
-//     ></Page>
-//   ),
-// });
+export const aiBuilderGenerateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: `/ai-builder/generate`,
+  component: lazyRouteComponent(() =>
+    import("./pages/ai-builder/Generate")
+  ),
+  preload: true,
+  pendingComponent: () => (
+    <Page
+      subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout pages, and elevate your brand."
+      title="AI Builder"
+    ></Page>
+  ),
+});
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -187,8 +187,8 @@ const routeTree = rootRoute.addChildren([
   pageBuilderRoutes,
   helpGuideRoute,
   createPageRoute,
-  // aiBuilderRoute,
-  // aiBuilderGenerateRoute,
+  aiBuilderRoute,
+  aiBuilderGenerateRoute,
 ]);
 
 const router = createRouter({ routeTree });

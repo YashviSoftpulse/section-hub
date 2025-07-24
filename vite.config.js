@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-
+// loacl work : shop=theme-section-app-demo-dev-2.myshopify.com&wgS037@Sghf
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],

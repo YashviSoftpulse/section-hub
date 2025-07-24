@@ -1,832 +1,864 @@
-// import React, { useEffect, useMemo, useRef, useState } from "react";
-// import moment from "moment";
-// import {
-//   Page,
-//   Layout,
-//   Card,
-//   Banner,
-//   Button,
-//   TextField,
-//   Text,
-//   Divider,
-//   InlineStack,
-//   BlockStack,
-//   Tooltip,
-//   Icon,
-//   Modal,
-//   Spinner,
-//   Box,
-//   RadioButton,
-//   Badge,
-// } from "@shopify/polaris";
-// import { useQuery } from "@tanstack/react-query";
-// import {
-//   ClipboardIcon,
-//   CheckIcon,
-//   ViewIcon,
-//   ComposeIcon,
-// } from "@shopify/polaris-icons";
-// import { useNavigate } from "@tanstack/react-router";
-// import { fetchData, getApiURL, MyEncryption } from "../../action";
-// import debounce from "lodash.debounce";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import moment from "moment";
+import {
+  Page,
+  Layout,
+  Card,
+  Banner,
+  Button,
+  TextField,
+  Text,
+  Divider,
+  InlineStack,
+  BlockStack,
+  Tooltip,
+  Modal,
+  Box,
+  RadioButton,
+  Badge,
+  OptionList,
+  Scrollable,
+  InlineGrid,
+  List,
+  SkeletonBodyText,
+} from "@shopify/polaris";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ClipboardIcon,
+  CheckIcon,
+  ViewIcon,
+  ComposeIcon,
+} from "@shopify/polaris-icons";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { fetchData, getApiURL, MyEncryption } from "../../action";
+import debounce from "lodash.debounce";
 
-// export default function Generate() {
-//   const [query, setQuery] = useState("");
-//   const [openSaveModal, setOpenSaveModal] = useState(false);
-//   const [savingName, setSavingName] = useState("");
-//   const [copied, setCopied] = useState(false);
-//   const [selectedPrompt, setSelectedPrompt] = useState({});
-//   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
-//   const [showPreviewModal, setShowPreviewModal] = useState(false);
-//   const [previewHtml, setPreviewHtml] = useState("");
-//   const [chatPage, setChatPage] = useState(1);
-//   const [chatData, setChatData] = useState({});
-//   const [isChatLoading, setIsChatLoading] = useState(false);
-//   const [hasMoreChats, setHasMoreChats] = useState(true);
-//   const [themeList, setThemeList] = useState([]);
-//   const [themeListModal, setThemeListModal] = useState(false);
-//   const [selectedTheme, setSelectedTheme] = useState(null);
-//   const [publishSuccess, setPublishSuccess] = useState(null);
-//   const [isPublishing, setIsPublishing] = useState(false);
-//   const navigate = useNavigate();
-//   const encryptor = new MyEncryption();
+export default function Generate() {
+  const [query, setQuery] = useState("");
+  const [openSaveModal, setOpenSaveModal] = useState(false);
+  const [savingName, setSavingName] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState({});
+  const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [chatPage, setChatPage] = useState(1);
+  const [chatData, setChatData] = useState({});
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [hasMoreChats, setHasMoreChats] = useState(true);
+  const [themeList, setThemeList] = useState([]);
+  const [themeListModal, setThemeListModal] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(null);
+  const [publishSuccess, setPublishSuccess] = useState(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const navigate = useNavigate();
+  const encryptor = new MyEncryption();
+  const urlParams = new URLSearchParams(window.location.search);
+  const SHOP = urlParams.get("shop");
+  const nodomainShop = SHOP?.replace(".myshopify.com", "");
+  const chatScrollContainerRef = useRef(null);
 
-//   const {
-//     data: generatedSection,
-//     refetch: generateSection,
-//     isLoading: isGenerating,
-//   } = useQuery({
-//     queryKey: ["generate-section", query],
-//     queryFn: async () => {
-//       const finalPrompt = query;
-//       setSelectedPrompt({});
-//       const formData = new FormData();
-//       formData.append("prompt", finalPrompt);
+  const {
+    data: generatedSection,
+    refetch: generateSection,
+    isLoading: isGenerating,
+  } = useQuery({
+    queryKey: ["generate-section", query],
+    queryFn: async () => {
+      const finalPrompt = query;
+      setSelectedPrompt({});
+      const formData = new FormData();
+      formData.append("prompt", finalPrompt);
 
-//       const response = await fetchData(getApiURL("/call"), formData);
-//       const content = response?.choices[0]?.message?.content;
-//       return content;
-//     },
-//     enabled: false,
-//     retry: false,
-//   });
+      const response = await fetchData(getApiURL("/call"), formData);
+      const content = response?.choices[0]?.message?.content;
+      return content;
+    },
+    enabled: false,
+    retry: false,
+  });
 
-//   const saveSection = async () => {
-//     if (!savingName.trim()) {
-//       throw new Error("Please enter a section name");
-//     }
-//     const responseCode = (generatedSection || "")
-//       .replace("```liquid", "")
-//       .replace("```", "");
-//     if (!responseCode) {
-//       throw new Error("No generated code to save.");
-//     }
-//     const filename =
-//       savingName.trim().replace(/\s+/g, "-").toLowerCase() + ".liquid";
-//     const formData = new FormData();
-//     formData.append("name", savingName.trim());
-//     formData.append(
-//       "file",
-//       new Blob([responseCode], { type: "text/plain" }),
-//       filename
-//     );
+  const saveSection = async () => {
+    if (!savingName.trim()) {
+      throw new Error("Please enter a section name");
+    }
+    const finalPrompt = query;
+    const filename =
+      savingName.trim().replace(/\s+/g, "-").toLowerCase() + ".liquid";
+    const formData = new FormData();
+    formData.append("name", savingName.trim());
+    formData.append(
+      "file",
+      new Blob([generatedSection], { type: "text/plain" }),
+      filename
+    );
+    formData.append("prompt", finalPrompt);
 
-//     const response = await fetchData(getApiURL("/ai-sections/save"), formData);
-//     if (response.status === true) {
-//       setQuery("");
-//       setSelectedPrompt(null);
-//       setHasGeneratedOnce(false);
-//       shopify.toast.show("Section saved successfully.", { duration: 2000 });
-//     } else {
-//       shopify.toast.show("Save failed", { duration: 2000 });
-//     }
-//   };
+    const response = await fetchData(getApiURL("/ai-sections/save"), formData);
+    if (response.status === true) {
+      setQuery("");
+      setSelectedPrompt(null);
+      setHasGeneratedOnce(false);
+      shopify.toast.show("Section saved successfully.", { duration: 2000 });
+    } else {
+      shopify.toast.show("Save failed", { duration: 2000 });
+    }
+  };
 
-//   const fetchChatList = async (page = chatPage) => {
-//     if (isChatLoading || !hasMoreChats) return;
+  const fetchChatList = useCallback(
+    async (pageToFetch) => {
+      if (isChatLoading || !hasMoreChats) return;
 
-//     setIsChatLoading(true);
+      setIsChatLoading(true);
 
-//     const formData = new FormData();
-//     formData.append("shop", "theme-section-app-demo-dev-2.myshopify.com");
-//     formData.append("limit", "20");
-//     formData.append("page", page.toString());
+      const formData = new FormData();
+      formData.append("limit", "10");
+      formData.append("page", pageToFetch.toString());
 
-//     const response = await fetchData(getApiURL("/chat-details"), formData);
+      const response = await fetchData(getApiURL("/chat-details"), formData);
 
-//     if (response.status === true) {
-//       const newData = response.data || {};
-//       const newChatData = { ...chatData };
+      if (response.status === true) {
+        const newData = response.data || {};
+        const newChatData = { ...chatData };
 
-//       // 🛡 Deduplication logic
-//       Object.entries(newData).forEach(([date, items]) => {
-//         const existingItems = newChatData[date] || [];
-//         const existingIds = new Set(
-//           existingItems.map((i) => i.id || i.file_name)
-//         );
-//         const newUniqueItems = items.filter(
-//           (i) => !existingIds.has(i.id || i.file_name)
-//         );
-//         newChatData[date] = [...existingItems, ...newUniqueItems];
-//       });
+        let gotNewItems = false;
+        Object.entries(newData).forEach(([date, items]) => {
+          if (items && items.length > 0) {
+            gotNewItems = true;
+            const existingItems = newChatData[date] || [];
+            const existingIds = new Set(
+              existingItems.map((i) => i.id || i.file_name)
+            );
+            const newUniqueItems = items.filter(
+              (i) => !existingIds.has(i.id || i.file_name)
+            );
+            newChatData[date] = [...existingItems, ...newUniqueItems];
+          } else if (!items && pageToFetch === 1) {
+            setHasMoreChats(false);
+          }
+        });
+        setIsChatLoading(false);
+        setChatData(newChatData);
+        if (gotNewItems) {
+          setChatPage((prev) => prev + 1);
+        } else {
+          setHasMoreChats(false);
+        }
+      } else {
+        shopify.toast.show("Failed to fetch chat history.", { duration: 2000 });
+        setHasMoreChats(false);
+      }
 
-//       setChatData(newChatData);
+      setIsChatLoading(false);
+    },
+    [isChatLoading, hasMoreChats, chatData, chatPage]
+  );
 
-//       // Only increment if we got data
-//       if (Object.keys(newData).length > 0) {
-//         setChatPage((prev) => prev + 1);
-//       } else {
-//         setHasMoreChats(false);
-//       }
-//     }
+  const handleScroll = useMemo(() => {
+    return debounce(() => {
+      const scrollElement = chatScrollContainerRef.current;
+      if (!scrollElement) return;
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 150;
+      if (isNearBottom && hasMoreChats && !isChatLoading) {
+        fetchChatList(chatPage);
+      }
+    }, 200);
+  }, [chatPage, hasMoreChats, isChatLoading, fetchChatList]);
 
-//     setIsChatLoading(false);
-//   };
+  useEffect(() => {
+    const scrollElement = chatScrollContainerRef.current;
+    if (!scrollElement) return;
+    const handleScrollDebounced = handleScroll;
+    scrollElement.addEventListener("scroll", handleScrollDebounced);
+    return () => {
+      scrollElement.removeEventListener("scroll", handleScrollDebounced);
+    };
+  }, [handleScroll]);
 
-//   const debouncedFetchChatList = useMemo(() => {
-//     return debounce((nextPage) => {
-//       fetchChatList(nextPage);
-//     }, 300);
-//   }, []);
+  useEffect(() => {
+    fetchChatList(1);
+  }, []);
 
-//   useEffect(() => {
-//     fetchChatList();
-//   }, []);
+  const handleCopy = async () => {
+    const data = generatedSection || previewHtml;
+    if (!data) return;
+    try {
+      await navigator.clipboard.writeText(data);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      shopify.toast.show("Code copied to clipboard.", { duration: 2000 });
+    } catch {
+      shopify.toast.show("Failed to copy code.", { duration: 2000 });
+    }
+  };
 
-//   useEffect(() => {
-//     const container = document.getElementById("chat-scroll-container");
-//     if (container) container.scrollTop = 0;
-//   }, [chatData]);
+  const processCodeForPreview = (code) => {
+    if (!code) return "";
 
-//   const handleCopy = async () => {
-//     const data = generatedSection || previewHtml;
-//     if (!data) return;
-//     try {
-//       await navigator.clipboard.writeText(data);
-//       setCopied(true);
-//       setTimeout(() => setCopied(false), 2000);
-//       shopify.toast.show("Code copied to clipboard.", { duration: 2000 });
-//     } catch {
-//       shopify.toast.show("Failed to copy code.", { duration: 2000 });
-//     }
-//   };
+    return code
+      .replace(/```liquid/g, "")
+      .replace(/```/g, "")
+      .split("{% schema %}")[0]
+      .replace(/{%[\s\S]*?%}/g, "")
+      .replace(/{{[\s\S]*?}}/g, "Placeholder");
+  };
 
-//   const processCodeForPreview = (code) => {
-//     if (!code) return "";
+  const extractHtmlContent = (processedCode) => {
+    const styleMatch = processedCode.match(/<style>([\s\S]*?)<\/style>/);
+    const htmlMatch = processedCode.match(/<\/style>([\s\S]*?)(?=<script>|$)/);
 
-//     return code
-//       .replace(/```liquid/g, "")
-//       .replace(/```/g, "")
-//       .split("{% schema %}")[0] // remove schema block
-//       .replace(/{%[\s\S]*?%}/g, "") // remove all Liquid tags
-//       .replace(/{{[\s\S]*?}}/g, "Placeholder"); // replace Liquid variables with placeholders
-//   };
+    const styles = styleMatch ? styleMatch[1] : "";
+    const html = htmlMatch ? htmlMatch[1].trim() : processedCode;
 
-//   const extractHtmlContent = (processedCode) => {
-//     const styleMatch = processedCode.match(/<style>([\s\S]*?)<\/style>/);
-//     const htmlMatch = processedCode.match(/<\/style>([\s\S]*?)(?=<script>|$)/);
+    return { styles, html };
+  };
 
-//     const styles = styleMatch ? styleMatch[1] : "";
-//     const html = htmlMatch ? htmlMatch[1].trim() : processedCode;
+  const handlePreview = () => {
+    const data = generatedSection;
+    if (!data) return;
 
-//     return { styles, html };
-//   };
+    if (previewHtml) {
+      setShowPreviewModal(true);
+      return;
+    }
+    const processedCode = processCodeForPreview(data);
+    const { styles, html } = extractHtmlContent(processedCode);
 
-//   const handlePreview = () => {
-//     const data = generatedSection;
-//     if (!data) return;
+    const previewContent = `
+      <style>${styles}</style>
+      <div class="preview-container">${html}</div>
+    `;
 
-//     if (previewHtml) {
-//       setShowPreviewModal(true);
-//       return;
-//     }
-//     const processedCode = processCodeForPreview(data);
-//     const { styles, html } = extractHtmlContent(processedCode);
+    setPreviewHtml(previewContent);
+    setShowPreviewModal(true);
+  };
 
-//     const previewContent = `
-//       <style>${styles}</style>
-//       <div class="preview-container">${html}</div>
-//     `;
+  function formatDate(date) {
+    const mDate = moment(date);
+    const today = moment();
+    const yesterday = moment().subtract(1, "days");
 
-//     setPreviewHtml(previewContent);
-//     setShowPreviewModal(true);
-//   };
+    if (mDate.isSame(today, "day")) {
+      return "Today";
+    } else if (mDate.isSame(yesterday, "day")) {
+      return "Yesterday";
+    } else {
+      return mDate.format("DD MMM YYYY");
+    }
+  }
 
-//   function formatDate(date) {
-//     const mDate = moment(date);
-//     const today = moment();
-//     const yesterday = moment().subtract(1, "days");
+  const { data: themeListData, isPending: isThemeListApiCall } = useQuery({
+    queryKey: ["theme_list"],
+    queryFn: async () => {
+      const response = await fetchData(getApiURL("/theme_list"));
+      return response;
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 
-//     if (mDate.isSame(today, "day")) {
-//       return "Today";
-//     } else if (mDate.isSame(yesterday, "day")) {
-//       return "Yesterday";
-//     } else {
-//       return mDate.format("DD MMM YYYY");
-//     }
-//   }
+  useEffect(() => {
+    if (themeListData) {
+      setThemeList(themeListData.themes_list);
+      const defaultTheme = themeListData.themes_list?.find(
+        (theme) => theme.role === "main"
+      );
+      if (defaultTheme) {
+        setSelectedTheme(defaultTheme.id);
+      }
+    }
+  }, [themeListData]);
 
-//   const { data: themeListData, isPending: isThemeListApiCall } = useQuery({
-//     queryKey: ["theme_list"],
-//     queryFn: async () => {
-//       const response = await fetchData(getApiURL("/theme_list"));
-//       return response;
-//     },
-//     staleTime: 0,
-//     refetchOnMount: true,
-//   });
+  const publishSection = async () => {
+    setIsPublishing(true);
+    setPublishSuccess(null);
+    const formdata = new FormData();
+    formdata.append("fileName", selectedPrompt.file_name);
+    formdata.append("theme", encryptor.encode(selectedTheme, 42));
+    const publish = await fetchData(getApiURL("/inject-section"), formdata);
+    if (publish.status === true) {
+      setPublishSuccess(publish.status);
+      setIsPublishing(false);
+      setThemeListModal(false),
+        shopify.toast.show("Section Added Successfully.", { duration: 2000 });
+    } else {
+      setIsPublishing(false);
+      setThemeListModal(false),
+        shopify.toast.show("Sorry! Process Failed. Please try again later.", {
+          duration: 2000,
+        });
+    }
+  };
 
-//   useEffect(() => {
-//     if (themeListData) {
-//       setThemeList(themeListData.themes_list);
-//       const defaultTheme = themeListData.themes_list?.find(
-//         (theme) => theme.role === "main"
-//       );
-//       if (defaultTheme) {
-//         setSelectedTheme(defaultTheme.id);
-//       }
-//     }
-//   }, [themeListData]);
+  const handleSelectChange = (value) => {
+    setSelectedTheme(value);
+  };
 
-//   const publishSection = async () => {
-//     setIsPublishing(true);
-//     setPublishSuccess(null);
-//     const formdata = new FormData();
-//     formdata.append("fileName", selectedPrompt.file_name);
-//     formdata.append("theme", encryptor.encode(selectedTheme, 42));
-//     const publish = await fetchData(getApiURL("/inject-section"), formdata);
-//     if (publish.status === true) {
-//       setPublishSuccess(publish.status);
-//       setIsPublishing(false);
-//       setSelectedFilters([]);
-//       shopify.toast.show("Section Added Successfully.", { duration: 2000 });
-//     } else {
-//       setIsPublishing(false);
-//       shopify.toast.show("Sorry! Process Failed. Please try again later.", {
-//         duration: 2000,
-//       });
-//     }
-//   };
+  const handleOptionListChange = (selectedValues) => {
+    const selectedId = selectedValues[0];
+    if (selectedId) {
+      let foundEntry = null;
+      for (const date in chatData) {
+        foundEntry = chatData[date].find(
+          (entry) => (entry.id || entry.file_name) === selectedId
+        );
+        if (foundEntry) break;
+      }
+      setSelectedPrompt(foundEntry || {});
+      setPreviewHtml(foundEntry?.code || "");
+      setQuery(foundEntry?.prompt || "");
+      setHasGeneratedOnce(true);
+    } else {
+      setSelectedPrompt({});
+      setPreviewHtml("");
+      setQuery("");
+      setHasGeneratedOnce(false);
+    }
+  };
 
-//   const handleSelectChange = (value) => {
-//     setSelectedTheme(value);
-//   };
+  const chatOptions = useMemo(() => {
+    const entries = Object.entries(chatData).map(([date, entries]) => ({
+      title: formatDate(date),
+      options: entries.map((entry) => ({
+        value: entry.id ?? entry.file_name,
+        label: entry.chat_name,
+      })),
+    }));
 
-//   return (
-//     <Page
-//       title="AI Section Builder"
-//       primaryAction={{
-//         content: "Save",
-//         onAction: () => setOpenSaveModal(true),
-//       }}
-//       secondaryActions={
-//         selectedPrompt &&
-//         Object.keys(selectedPrompt)?.length > 0 && (
-//           <Button onClick={() => setThemeListModal(true)}>Publish</Button>
-//         )
-//       }
-//       backAction={{
-//         onAction: () =>
-//           navigate({ to: `/ai-builder${window.location.search}` }),
-//       }}
-//     >
-//       <Layout>
-//         <Layout.Section>
-//           <Layout>
-//             <Layout.Section variant="oneThird">
-//               <Card title="History (4/day limit)">
-//                 <BlockStack gap={400}>
-//                   <BlockStack gap={300}>
-//                     <InlineStack wrap={false}>
-//                       <Text>Describe the section you want to generate</Text>
-//                       <Tooltip content="New Chat">
-//                         <Button
-//                           variant="plain"
-//                           icon={ComposeIcon}
-//                           onClick={() => {
-//                             setQuery(""),
-//                               setPreviewHtml(""),
-//                               setSelectedPrompt({});
-//                           }}
-//                         ></Button>
-//                       </Tooltip>
-//                     </InlineStack>
-//                     <div className="Polaris-Connected">
-//                       <div className="Polaris-Connected__Item Polaris-Connected__Item--primary">
-//                         <div className="Polaris-TextField Polaris-TextField--multiline">
-//                           <textarea
-//                             id="r5"
-//                             className="Polaris-TextField__Input"
-//                             type="text"
-//                             rows="5"
-//                             aria-labelledby="r5Label"
-//                             aria-invalid="false"
-//                             aria-multiline="true"
-//                             style={{
-//                               height: "110px",
-//                               fontSize: "var(--p-text-body-sm-font-size)",
-//                             }}
-//                             value={query}
-//                             onChange={(e) => setQuery(e.target.value)}
-//                             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey}
-//                           ></textarea>
-//                           <div className="Polaris-TextField__Backdrop"></div>
-//                           <div
-//                             aria-hidden="true"
-//                             className="Polaris-TextField__Resizer"
-//                           >
-//                             <div className="Polaris-TextField__DummyInput">
-//                               <br />
-//                             </div>
-//                             <div className="Polaris-TextField__DummyInput">
-//                               <br />
-//                               <br />
-//                               <br />
-//                               <br />
-//                               <br />
-//                             </div>
-//                           </div>
-//                         </div>
-//                       </div>
-//                     </div>
+    return entries;
+  }, [chatData]);
 
-//                     <Button
-//                       variant="primary"
-//                       size="large"
-//                       onClick={generateSection}
-//                       loading={isGenerating}
-//                       fullWidth
-//                     >
-//                       {hasGeneratedOnce ? "Regenerate" : "Generate"}
-//                     </Button>
-//                   </BlockStack>
-//                   <Divider />
-//                   <BlockStack gap={300}>
-//                     <Text variant="headingMd">Prompt</Text>
-//                     <div
-//                       style={{
-//                         maxHeight: "600px",
-//                         overflowY: "auto",
-//                         paddingRight: "1rem",
-//                         scrollbarWidth: "thin",
-//                       }}
-//                       onScroll={(e) => {
-//                         const { scrollTop, scrollHeight, clientHeight } =
-//                           e.target;
-//                         if (
-//                           scrollTop + clientHeight >= scrollHeight - 100 &&
-//                           hasMoreChats &&
-//                           !isChatLoading
-//                         ) {
-//                           debouncedFetchChatList(chatPage);
-//                         }
-//                       }}
-//                     >
-//                       {Object.entries(chatData || {}).map(
-//                         ([date, data], index, array) => (
-//                           <BlockStack key={date} gap="200">
-//                             <Text variant="headingXs" as="h6">
-//                               {formatDate(date)}
-//                             </Text>
+  return (
+    <Page
+      title="AI Section Builder"
+      primaryAction={{
+        content: "Save",
+        onAction: () => setOpenSaveModal(true),
+      }}
+      secondaryActions={
+        selectedPrompt &&
+        Object.keys(selectedPrompt)?.length > 0 && (
+          <Button onClick={() => setThemeListModal(true)}>Publish</Button>
+        )
+      }
+      backAction={{
+        onAction: () =>
+          navigate({ to: `/ai-builder${window.location.search}` }),
+      }}
+    >
+      <Layout>
+        <Layout.Section>
+          <Layout>
+            <Layout.Section variant="oneThird">
+              <Card title="History (4/day limit)">
+                <BlockStack gap={400}>
+                  <BlockStack gap={300}>
+                    <InlineStack wrap={false}>
+                      <Text>Describe the section you want to generate</Text>
+                      <Tooltip content="New Chat">
+                        <Button
+                          variant="plain"
+                          icon={ComposeIcon}
+                          onClick={() => {
+                            setQuery(""),
+                              setPreviewHtml(""),
+                              setSelectedPrompt({});
+                          }}
+                        ></Button>
+                      </Tooltip>
+                    </InlineStack>
+                    <div className="Polaris-Connected">
+                      <div className="Polaris-Connected__Item Polaris-Connected__Item--primary">
+                        <div className="Polaris-TextField Polaris-TextField--multiline">
+                          <textarea
+                            id="r5"
+                            className="Polaris-TextField__Input"
+                            type="text"
+                            rows="5"
+                            aria-labelledby="r5Label"
+                            aria-invalid="false"
+                            aria-multiline="true"
+                            style={{
+                              height: "110px",
+                              fontSize: "var(--p-text-body-sm-font-size)",
+                            }}
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey}
+                          ></textarea>
+                          <div className="Polaris-TextField__Backdrop"></div>
+                          <div
+                            aria-hidden="true"
+                            className="Polaris-TextField__Resizer"
+                          >
+                            <div className="Polaris-TextField__DummyInput">
+                              <br />
+                            </div>
+                            <div className="Polaris-TextField__DummyInput">
+                              <br />
+                              <br />
+                              <br />
+                              <br />
+                              <br />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-//                             <BlockStack gap="100">
-//                               {data.map((entry, idx) => (
-//                                 <InlineStack
-//                                   key={entry.id || `${entry.file_name}-${idx}`}
-//                                   align="space-between"
-//                                   wrap={false}
-//                                 >
-//                                   <Button
-//                                     textAlign="left"
-//                                     tone="subdued"
-//                                     fullWidth
-//                                     variant={
-//                                       selectedPrompt?.id === entry.id
-//                                         ? "tertiary"
-//                                         : ""
-//                                     }
-//                                     onClick={() => {
-//                                       setSelectedPrompt(entry);
-//                                       setPreviewHtml(entry.code || "");
-//                                       setQuery(entry.chat_name);
-//                                       setHasGeneratedOnce(true);
-//                                     }}
-//                                   >
-//                                     <Text truncate>{entry.chat_name}</Text>
-//                                   </Button>
-//                                   {selectedPrompt?.chat_name ===
-//                                     entry.chat_name && (
-//                                     <Icon source={CheckIcon} tone="success"/>
-//                                   )}
-//                                 </InlineStack>
-//                               ))}
-//                             </BlockStack>
-//                             {index < array.length - 1 && <hr className="Polaris-Divider" style={{"border-block-start": "var(--p-border-width-025) solid var(--p-color-border-secondary)" , paddingBottom: "15px"}}></hr>}
-//                           </BlockStack>
-//                         )
-//                       )}
+                    <Button
+                      variant="primary"
+                      size="large"
+                      onClick={generateSection}
+                      loading={isGenerating}
+                      fullWidth
+                    >
+                      {hasGeneratedOnce ? "Regenerate" : "Generate"}
+                    </Button>
+                  </BlockStack>
+                  <Divider />
+                  <BlockStack gap={isChatLoading && 300}>
+                    <Text variant="headingMd">Prompt</Text>
+                    {isChatLoading ? (
+                      <BlockStack gap={400}>
+                        <SkeletonBodyText lines={1} />
+                        <SkeletonBodyText lines={1} />
+                        <SkeletonBodyText lines={1} />
+                        <SkeletonBodyText lines={1} />
+                        <SkeletonBodyText lines={1} />
+                        <SkeletonBodyText lines={1} />
+                      </BlockStack>
+                    ) : (
+                      <div
+                        ref={chatScrollContainerRef}
+                        onScroll={handleScroll}
+                        style={{
+                          height: "400px",
+                          overflowY: "auto",
+                          paddingRight: "1rem",
+                          boxSizing: "border-box",
+                          scrollbarWidth: "thin",
+                        }}
+                      >
+                        {Object.keys(chatData).length > 0 ? (
+                          <OptionList
+                            onChange={handleOptionListChange}
+                            selected={
+                              selectedPrompt?.id
+                                ? [selectedPrompt?.id]
+                                : selectedPrompt?.file_name
+                                ? [selectedPrompt?.file_name]
+                                : []
+                            }
+                            sections={chatOptions}
+                          />
+                        ) : (
+                          !hasMoreChats && <Text>No more history</Text>
+                        )}
+                      </div>
+                    )}
+                  </BlockStack>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
 
-//                       {isChatLoading && <Spinner />}
-//                       {!hasMoreChats && <Text>No more history</Text>}
-//                     </div>
-//                   </BlockStack>
-//                 </BlockStack>
-//               </Card>
-//             </Layout.Section>
+            <Layout.Section>
+              <BlockStack gap={400}>
+                <Card title="Generated Code" sectioned>
+                  <div
+                    class="Polaris-InlineStack"
+                    style={{
+                      "--pc-inline-stack-align": "space-between",
+                      "--pc-inline-stack-wrap": "wrap",
+                      "--pc-inline-stack-flex-direction-xs": "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text variant="headingMd">Code</Text>
+                    <div
+                      class="Polaris-InlineStack"
+                      style={{
+                        "--pc-inline-stack-wrap": "wrap",
+                        "--pc-inline-stack-gap-xs": "var(--p-space-200)",
+                        "--pc-inline-stack-flex-direction-xs": "row",
+                        alignItems: "baseline",
+                      }}
+                    >
+                      <Tooltip content={copied ? "Copied!" : "Copy code"}>
+                        <Button
+                          icon={!copied ? ClipboardIcon : CheckIcon}
+                          onClick={handleCopy}
+                        />
+                      </Tooltip>
+                      {generatedSection && (
+                        <Button icon={ViewIcon} onClick={handlePreview}>
+                          Preview
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      background: "#f6f6f7",
+                      padding: "10px",
+                      borderRadius: "6px",
+                      fontFamily: "monospace",
+                      overflow: "scroll",
+                      maxHeight: "600px",
+                      height: "100%",
+                      scrollbarWidth: "thin",
+                    }}
+                  >
+                    {(generatedSection || previewHtml)
+                      .replace("```liquid", "")
+                      .replace("```", "")}
+                  </pre>
+                </Card>
+              </BlockStack>
+            </Layout.Section>
+          </Layout>
+        </Layout.Section>
+        <Layout.Section></Layout.Section>
+      </Layout>
 
-//             <Layout.Section>
-//               <BlockStack gap={400}>
-//                 <Card title="Generated Code" sectioned>
-//                   <div
-//                     class="Polaris-InlineStack"
-//                     style={{
-//                       "--pc-inline-stack-align": "space-between",
-//                       "--pc-inline-stack-wrap": "wrap",
-//                       "--pc-inline-stack-flex-direction-xs": "row",
-//                       alignItems: "center",
-//                     }}
-//                   >
-//                     <Text variant="headingMd">Code</Text>
-//                     <div
-//                       class="Polaris-InlineStack"
-//                       style={{
-//                         "--pc-inline-stack-wrap": "wrap",
-//                         "--pc-inline-stack-gap-xs": "var(--p-space-200)",
-//                         "--pc-inline-stack-flex-direction-xs": "row",
-//                         alignItems: "baseline",
-//                       }}
-//                     >
-//                       <Tooltip content={copied ? "Copied!" : "Copy code"}>
-//                         <Button
-//                           icon={!copied ? ClipboardIcon : CheckIcon}
-//                           onClick={handleCopy}
-//                         />
-//                       </Tooltip>
-//                       {generatedSection && (
-//                         <Button icon={ViewIcon} onClick={handlePreview}>
-//                           Preview
-//                         </Button>
-//                       )}
-//                     </div>
-//                   </div>
-//                   <pre
-//                     style={{
-//                       whiteSpace: "pre-wrap",
-//                       wordBreak: "break-word",
-//                       background: "#f6f6f7",
-//                       padding: "1rem",
-//                       borderRadius: "6px",
-//                       fontFamily: "monospace",
-//                       overflow: "scroll",
-//                       maxHeight: "550px",
-//                       height: "100%",
-//                       scrollbarWidth: "thin",
-//                     }}
-//                   >
-//                     {(generatedSection || "")
-//                       .replace("```liquid", "")
-//                       .replace("```", "") || previewHtml}
-//                   </pre>
-//                 </Card>
-//               </BlockStack>
-//             </Layout.Section>
-//           </Layout>
-//         </Layout.Section>
-//         <Layout.Section></Layout.Section>
-//       </Layout>
+      <Modal
+        open={openSaveModal}
+        onClose={() => setOpenSaveModal(false)}
+        title="Save Generated Section"
+        primaryAction={{
+          content: "Save",
+          onAction: () => saveSection(),
+          // loading: isSaveing,
+        }}
+      >
+        <Modal.Section>
+          <TextField
+            label="Section Name"
+            value={savingName}
+            onChange={setSavingName}
+          />
+        </Modal.Section>
+      </Modal>
 
-//       <Modal
-//         open={openSaveModal}
-//         onClose={() => setOpenSaveModal(false)}
-//         title="Save Generated Section"
-//         primaryAction={{
-//           content: "Save",
-//           onAction: () => saveSection(),
-//           // loading: isSaveing,
-//         }}
-//       >
-//         <Modal.Section>
-//           <TextField
-//             label="Section Name"
-//             value={savingName}
-//             onChange={setSavingName}
-//           />
-//         </Modal.Section>
-//       </Modal>
+      {showPreviewModal && (
+        <Modal
+          open={showPreviewModal}
+          onClose={() => setShowPreviewModal(false)}
+          title="Generated Section Preview"
+        >
+          <Modal.Section>
+            <div
+              style={{
+                padding: "20px",
+                backgroundColor: "white",
+                maxWidth: "800px",
+                margin: "0 auto",
+              }}
+            >
+              {previewHtml ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "20px",
+                    backgroundColor: "white",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    background: "#f6f6f7",
+                    padding: "1rem",
+                    borderRadius: "6px",
+                    fontFamily: "monospace",
+                    overflow: "scroll",
+                    maxHeight: "550px",
+                    height: "100%",
+                    scrollbarWidth: "thin",
+                  }}
+                >
+                  {generatedSection}
+                </div>
+              )}
+            </div>
+          </Modal.Section>
+        </Modal>
+      )}
 
-//       {showPreviewModal && (
-//         <Modal
-//           open={showPreviewModal}
-//           onClose={() => setShowPreviewModal(false)}
-//           title="Generated Section Preview"
-//         >
-//           <Modal.Section>
-//             <div
-//               style={{
-//                 padding: "20px",
-//                 backgroundColor: "white",
-//                 maxWidth: "800px",
-//                 margin: "0 auto",
-//               }}
-//             >
-//               {previewHtml ? (
-//                 <div
-//                   dangerouslySetInnerHTML={{ __html: previewHtml }}
-//                   style={{
-//                     border: "1px solid #ddd",
-//                     borderRadius: "8px",
-//                     padding: "20px",
-//                     backgroundColor: "white",
-//                   }}
-//                 />
-//               ) : (
-//                 <div
-//                   style={{
-//                     whiteSpace: "pre-wrap",
-//                     wordBreak: "break-word",
-//                     background: "#f6f6f7",
-//                     padding: "1rem",
-//                     borderRadius: "6px",
-//                     fontFamily: "monospace",
-//                     overflow: "scroll",
-//                     maxHeight: "550px",
-//                     height: "100%",
-//                     scrollbarWidth: "thin",
-//                   }}
-//                 >
-//                   {generatedSection}
-//                 </div>
-//               )}
-//             </div>
-//           </Modal.Section>
-//         </Modal>
-//       )}
+      <Modal
+        size={publishSuccess === true ? "large" : "small"}
+        open={themeListModal}
+        onClose={() => {
+          if (publishSuccess === true) {
+            setThemeListModal(false);
+            setPublishSuccess(null);
+          }
+          setThemeListModal(false);
+          setIsPublishing(false);
+        }}
+        title={
+          <Text as="h2" variant="headingMd">
+            {publishSuccess === true
+              ? `${selectedPrompt.chat_name} Section`
+              : "Select Shopify Theme to Publish"}
+          </Text>
+        }
+        primaryAction={
+          publishSuccess === true
+            ? {
+                content: "Customize Section",
+                onAction: () => {
+                  window.open(
+                    `https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`,
+                    "_blank"
+                  );
+                },
+              }
+            : ""
+        }
+        secondaryActions={{
+          content: publishSuccess === true ? "Close" : "Add to theme",
+          onAction:
+            publishSuccess === true
+              ? () => {
+                  setThemeListModal(false), setPublishSuccess(null);
+                }
+              : publishSection,
+          loading: isPublishing,
+        }}
+      >
+        <Modal.Section>
+          {publishSuccess === true ? (
+            <BlockStack gap={300}>
+              <InlineGrid gap={100} columns={2}>
+                <BlockStack gap={800}>
+                  <BlockStack gap={500}>
+                    <InlineStack gap={200}>
+                      {/* <Icon source={CheckIcon}></Icon> */}
+                      <Text variant="bodyLg" as="h2">
+                        Your section has been successfully added and is now
+                        ready for customization in your store!
+                      </Text>
+                    </InlineStack>
 
-//       <Modal
-//         size={publishSuccess === true ? "large" : "small"}
-//         open={themeListModal}
-//         onClose={() => {
-//           if (publishSuccess === true) {
-//             setSelectedFilters([]);
-//             setThemeListModal(false);
-//             setPublishSuccess(null);
-//           }
-//           setThemeListModal(false);
-//           setIsPublishing(false);
-//         }}
-//         title={
-//           <Text as="h2" variant="headingMd">
-//             {publishSuccess === true
-//               ? `${selectedPrompt.chat_name} Section`
-//               : "Select Shopify Theme to Publish"}
-//           </Text>
-//         }
-//         primaryAction={
-//           publishSuccess === true
-//             ? {
-//                 content: "Customize Section",
-//                 onAction: () => {
-//                   window.open(
-//                     `https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`,
-//                     "_blank"
-//                   );
-//                 },
-//               }
-//             : ""
-//         }
-//         secondaryActions={{
-//           content: publishSuccess === true ? "Close" : "Add to theme",
-//           onAction:
-//             publishSuccess === true
-//               ? () => {
-//                   setThemeListModal(false),
-//                     setPublishSuccess(null),
-//                     setSelectedFilters([]);
-//                 }
-//               : publishSection,
-//           loading: isPublishing,
-//         }}
-//       >
-//         <Modal.Section>
-//           {publishSuccess === true ? (
-//             <BlockStack gap={300}>
-//               <InlineGrid gap={100} columns={2}>
-//                 <BlockStack gap={800}>
-//                   <BlockStack gap={500}>
-//                     <InlineStack gap={200}>
-//                       {/* <Icon source={CheckIcon}></Icon> */}
-//                       <Text variant="bodyLg" as="h2">
-//                         Your section has been successfully added and is now
-//                         ready for customization in your store!
-//                       </Text>
-//                     </InlineStack>
+                    <List gap="loose" type="number">
+                      <List.Item>
+                        Go to{" "}
+                        <Link
+                          to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`}
+                          target="blank"
+                        >
+                          Theme Customizer
+                        </Link>{" "}
+                        of Selected Theme
+                      </List.Item>
+                      <List.Item>
+                        Click <b>Add Section</b> Option From Left Sidebar{" "}
+                      </List.Item>
+                      <List.Item>
+                        Choose <b>{selectedPrompt.chat_name}</b> Section from
+                        Opened List
+                      </List.Item>
+                    </List>
+                    <div>
+                      <Button
+                        onClick={() => {
+                          setThemeListModal(false);
+                          setPublishSuccess(null);
+                        }}
+                      >
+                        Add More Section
+                      </Button>
+                    </div>
+                  </BlockStack>
+                  <BlockStack gap={100}>
+                    <Text variant="bodyLg" as="h2">
+                      💡 Need Help Customizing Your Theme?
+                    </Text>
+                    <Text variant="bodyLg" as="h2">
+                      👉 We offer expert help beyond ready-made sections.{" "}
+                      <Link
+                        target="_blank"
+                        to="https://softpulseinfotech.com/shopify-theme-customization?utm_source=shopify_sectionhub_plugin&utm_medium=referral&utm_campaign=custom_work"
+                        removeUnderline={true}
+                      >
+                        Get in Touch
+                      </Link>
+                    </Text>
+                  </BlockStack>
+                </BlockStack>
+                <InlineStack gap={400}>
+                  <div className="main-sidebar">
+                    <div className="main-theme-section">
+                      <div className="theme-sections">
+                        <div className="section-title">
+                          <h2>
+                            <b>SH: {selectedPrompt.chat_name}</b>
+                          </h2>
+                        </div>
+                        <div className="name-of-section">
+                          <div className="section-name">
+                            <p>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M3.5 6.25c0-1.519 1.231-2.75 2.75-2.75.414 0 .75.336.75.75s-.336.75-.75.75c-.69 0-1.25.56-1.25 1.25 0 .414-.336.75-.75.75s-.75-.336-.75-.75Z" />
+                                <path
+                                  fillRule="evenodd"
+                                  d="M3.5 9.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5c0 .966-.784 1.75-1.75 1.75h-9.5c-.966 0-1.75-.784-1.75-1.75v-1.5Zm1.75-.25c-.138 0-.25.112-.25.25v1.5c0 .138.112.25.25.25h9.5c.138 0 .25-.112.25-.25v-1.5c0-.138-.112-.25-.25-.25h-9.5Z"
+                                />
+                                <path d="M3.5 13.75c0 1.519 1.231 2.75 2.75 2.75.414 0 .75-.336.75-.75s-.336-.75-.75-.75c-.69 0-1.25-.56-1.25-1.25 0-.414-.336-.75-.75-.75s-.75.336-.75.75Z" />
+                                <path d="M13.75 3.5c1.519 0 2.75 1.231 2.75 2.75 0 .414-.336.75-.75.75s-.75-.336-.75-.75c0-.69-.56-1.25-1.25-1.25-.414 0-.75-.336-.75-.75s.336-.75.75-.75Z" />
+                                <path d="M13.75 16.5c1.519 0 2.75-1.231 2.75-2.75 0-.414-.336-.75-.75-.75s-.75.336-.75.75c0 .69-.56 1.25-1.25 1.25-.414 0-.75.336-.75.75s.336.75.75.75Z" />
+                                <path d="M11.75 4.25c0 .414-.336.75-.75.75h-2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2c.414 0 .75.336.75.75Z" />
+                                <path d="M11 16.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-2c-.414 0-.75.336-.75.75s.336.75.75.75h2Z" />
+                              </svg>
+                              ...
+                            </p>
+                            <p>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M3.5 6.25c0-1.519 1.231-2.75 2.75-2.75.414 0 .75.336.75.75s-.336.75-.75.75c-.69 0-1.25.56-1.25 1.25 0 .414-.336.75-.75.75s-.75-.336-.75-.75Z" />
+                                <path
+                                  fillRule="evenodd"
+                                  d="M3.5 9.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5c0 .966-.784 1.75-1.75 1.75h-9.5c-.966 0-1.75-.784-1.75-1.75v-1.5Zm1.75-.25c-.138 0-.25.112-.25.25v1.5c0 .138.112.25.25.25h9.5c.138 0 .25-.112.25-.25v-1.5c0-.138-.112-.25-.25-.25h-9.5Z"
+                                />
+                                <path d="M3.5 13.75c0 1.519 1.231 2.75 2.75 2.75.414 0 .75-.336.75-.75s-.336-.75-.75-.75c-.69 0-1.25-.56-1.25-1.25 0-.414-.336-.75-.75-.75s-.75.336-.75.75Z" />
+                                <path d="M13.75 3.5c1.519 0 2.75 1.231 2.75 2.75 0 .414-.336.75-.75.75s-.75-.336-.75-.75c0-.69-.56-1.25-1.25-1.25-.414 0-.75-.336-.75-.75s.336-.75.75-.75Z" />
+                                <path d="M13.75 16.5c1.519 0 2.75-1.231 2.75-2.75 0-.414-.336-.75-.75-.75s-.75.336-.75.75c0 .69-.56 1.25-1.25 1.25-.414 0-.75.336-.75.75s.336.75.75.75Z" />
+                                <path d="M11.75 4.25c0 .414-.336.75-.75.75h-2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2c.414 0 .75.336.75.75Z" />
+                                <path d="M11 16.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-2c-.414 0-.75.336-.75.75s.336.75.75.75h2Z" />
+                              </svg>
+                              ...
+                            </p>
+                          </div>
+                          <div className="add-section">
+                            <p>
+                              <a href="#">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M6.25 10a.75.75 0 0 1 .75-.75h2.25v-2.25a.75.75 0 0 1 1.5 0v2.25h2.25a.75.75 0 0 1 0 1.5h-2.25v2.25a.75.75 0 0 1-1.5 0v-2.25h-2.25a.75.75 0 0 1-.75-.75Z" />
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z"
+                                  />
+                                </svg>
+                                Add Block
+                              </a>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="theme-sections">
+                        <div className="section-title">
+                          <h2>Footer</h2>
+                        </div>
+                        <div className="name-of-section">
+                          <div className="section-name">
+                            <p>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M3.5 5.25c0-.966.784-1.75 1.75-1.75h.5a.75.75 0 0 1 0 1.5h-.5a.25.25 0 0 0-.25.25v.5a.75.75 0 0 1-1.5 0v-.5Z" />
+                                <path
+                                  fillRule="evenodd"
+                                  d="M3.5 13.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5a1.75 1.75 0 0 1-1.75 1.75h-9.5a1.75 1.75 0 0 1-1.75-1.75v-1.5Zm1.75-.25a.25.25 0 0 0-.25.25v1.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-9.5Z"
+                                />
+                                <path d="M3.5 8.75c0 .966.784 1.75 1.75 1.75h.5a.75.75 0 0 0 0-1.5h-.5a.25.25 0 0 1-.25-.25v-.5a.75.75 0 0 0-1.5 0v.5Z" />
+                                <path d="M14.75 3.5c.966 0 1.75.784 1.75 1.75v.5a.75.75 0 0 1-1.5 0v-.5a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5Z" />
+                                <path d="M14.75 10.5a1.75 1.75 0 0 0 1.75-1.75v-.5a.75.75 0 0 0-1.5 0v.5a.25.25 0 0 1-.25.25h-.5a.75.75 0 0 0 0 1.5h.5Z" />
+                                <path d="M11.75 4.25a.75.75 0 0 1-.75.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 .75.75Z" />
+                                <path d="M11 10.5a.75.75 0 0 0 0-1.5h-2a.75.75 0 0 0 0 1.5h2Z" />
+                              </svg>
+                              Footer
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="theme-setting">
+                        <div className="section-title">
+                          <h2>Theme settings</h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <img
+                      className="popover-image"
+                      src="/assets/modalSkeleton.png"
+                    />
+                  </div>
+                </InlineStack>
+              </InlineGrid>
+            </BlockStack>
+          ) : (
+            <Box>
+              <Box paddingBlockEnd={200}>
+                <Text variant="bodyMd" as="p">
+                  This will make it easier for you to identify within the
+                  Shopify Theme customizer.
+                </Text>
+              </Box>
 
-//                     <List gap="loose" type="number">
-//                       <List.Item>
-//                         Go to{" "}
-//                         <Link
-//                           to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme}/editor`}
-//                           target="blank"
-//                         >
-//                           Theme Customizer
-//                         </Link>{" "}
-//                         of Selected Theme
-//                       </List.Item>
-//                       <List.Item>
-//                         Click <b>Add Section</b> Option From Left Sidebar{" "}
-//                       </List.Item>
-//                       <List.Item>
-//                         Choose <b>{selectedPrompt.chat_name}</b> Section from
-//                         Opened List
-//                       </List.Item>
-//                     </List>
-//                     <div>
-//                       <Button
-//                         onClick={() => {
-//                           setThemeListModal(false);
-//                           setPublishSuccess(null);
-//                         }}
-//                       >
-//                         Add More Section
-//                       </Button>
-//                     </div>
-//                   </BlockStack>
-//                   <BlockStack gap={100}>
-//                     <Text variant="bodyLg" as="h2">
-//                       💡 Need Help Customizing Your Theme?
-//                     </Text>
-//                     <Text variant="bodyLg" as="h2">
-//                       👉 We offer expert help beyond ready-made sections.{" "}
-//                       <Link
-//                         target="_blank"
-//                         to="https://softpulseinfotech.com/shopify-theme-customization?utm_source=shopify_sectionhub_plugin&utm_medium=referral&utm_campaign=custom_work"
-//                         removeUnderline={true}
-//                       >
-//                         Get in Touch
-//                       </Link>
-//                     </Text>
-//                   </BlockStack>
-//                 </BlockStack>
-//                 <InlineStack gap={400}>
-//                   <div className="main-sidebar">
-//                     <div className="main-theme-section">
-//                       <div className="theme-sections">
-//                         <div className="section-title">
-//                           <h2>
-//                             <b>SH: {selectedPrompt.chat_name}</b>
-//                           </h2>
-//                         </div>
-//                         <div className="name-of-section">
-//                           <div className="section-name">
-//                             <p>
-//                               <svg
-//                                 xmlns="http://www.w3.org/2000/svg"
-//                                 viewBox="0 0 20 20"
-//                               >
-//                                 <path d="M3.5 6.25c0-1.519 1.231-2.75 2.75-2.75.414 0 .75.336.75.75s-.336.75-.75.75c-.69 0-1.25.56-1.25 1.25 0 .414-.336.75-.75.75s-.75-.336-.75-.75Z" />
-//                                 <path
-//                                   fillRule="evenodd"
-//                                   d="M3.5 9.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5c0 .966-.784 1.75-1.75 1.75h-9.5c-.966 0-1.75-.784-1.75-1.75v-1.5Zm1.75-.25c-.138 0-.25.112-.25.25v1.5c0 .138.112.25.25.25h9.5c.138 0 .25-.112.25-.25v-1.5c0-.138-.112-.25-.25-.25h-9.5Z"
-//                                 />
-//                                 <path d="M3.5 13.75c0 1.519 1.231 2.75 2.75 2.75.414 0 .75-.336.75-.75s-.336-.75-.75-.75c-.69 0-1.25-.56-1.25-1.25 0-.414-.336-.75-.75-.75s-.75.336-.75.75Z" />
-//                                 <path d="M13.75 3.5c1.519 0 2.75 1.231 2.75 2.75 0 .414-.336.75-.75.75s-.75-.336-.75-.75c0-.69-.56-1.25-1.25-1.25-.414 0-.75-.336-.75-.75s.336-.75.75-.75Z" />
-//                                 <path d="M13.75 16.5c1.519 0 2.75-1.231 2.75-2.75 0-.414-.336-.75-.75-.75s-.75.336-.75.75c0 .69-.56 1.25-1.25 1.25-.414 0-.75.336-.75.75s.336.75.75.75Z" />
-//                                 <path d="M11.75 4.25c0 .414-.336.75-.75.75h-2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2c.414 0 .75.336.75.75Z" />
-//                                 <path d="M11 16.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-2c-.414 0-.75.336-.75.75s.336.75.75.75h2Z" />
-//                               </svg>
-//                               ...
-//                             </p>
-//                             <p>
-//                               <svg
-//                                 xmlns="http://www.w3.org/2000/svg"
-//                                 viewBox="0 0 20 20"
-//                               >
-//                                 <path d="M3.5 6.25c0-1.519 1.231-2.75 2.75-2.75.414 0 .75.336.75.75s-.336.75-.75.75c-.69 0-1.25.56-1.25 1.25 0 .414-.336.75-.75.75s-.75-.336-.75-.75Z" />
-//                                 <path
-//                                   fillRule="evenodd"
-//                                   d="M3.5 9.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5c0 .966-.784 1.75-1.75 1.75h-9.5c-.966 0-1.75-.784-1.75-1.75v-1.5Zm1.75-.25c-.138 0-.25.112-.25.25v1.5c0 .138.112.25.25.25h9.5c.138 0 .25-.112.25-.25v-1.5c0-.138-.112-.25-.25-.25h-9.5Z"
-//                                 />
-//                                 <path d="M3.5 13.75c0 1.519 1.231 2.75 2.75 2.75.414 0 .75-.336.75-.75s-.336-.75-.75-.75c-.69 0-1.25-.56-1.25-1.25 0-.414-.336-.75-.75-.75s-.75.336-.75.75Z" />
-//                                 <path d="M13.75 3.5c1.519 0 2.75 1.231 2.75 2.75 0 .414-.336.75-.75.75s-.75-.336-.75-.75c0-.69-.56-1.25-1.25-1.25-.414 0-.75-.336-.75-.75s.336-.75.75-.75Z" />
-//                                 <path d="M13.75 16.5c1.519 0 2.75-1.231 2.75-2.75 0-.414-.336-.75-.75-.75s-.75.336-.75.75c0 .69-.56 1.25-1.25 1.25-.414 0-.75.336-.75.75s.336.75.75.75Z" />
-//                                 <path d="M11.75 4.25c0 .414-.336.75-.75.75h-2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2c.414 0 .75.336.75.75Z" />
-//                                 <path d="M11 16.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-2c-.414 0-.75.336-.75.75s.336.75.75.75h2Z" />
-//                               </svg>
-//                               ...
-//                             </p>
-//                           </div>
-//                           <div className="add-section">
-//                             <p>
-//                               <a href="#">
-//                                 <svg
-//                                   xmlns="http://www.w3.org/2000/svg"
-//                                   viewBox="0 0 20 20"
-//                                 >
-//                                   <path d="M6.25 10a.75.75 0 0 1 .75-.75h2.25v-2.25a.75.75 0 0 1 1.5 0v2.25h2.25a.75.75 0 0 1 0 1.5h-2.25v2.25a.75.75 0 0 1-1.5 0v-2.25h-2.25a.75.75 0 0 1-.75-.75Z" />
-//                                   <path
-//                                     fillRule="evenodd"
-//                                     d="M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z"
-//                                   />
-//                                 </svg>
-//                                 Add Block
-//                               </a>
-//                             </p>
-//                           </div>
-//                         </div>
-//                       </div>
-//                       <div className="theme-sections">
-//                         <div className="section-title">
-//                           <h2>Footer</h2>
-//                         </div>
-//                         <div className="name-of-section">
-//                           <div className="section-name">
-//                             <p>
-//                               <svg
-//                                 xmlns="http://www.w3.org/2000/svg"
-//                                 viewBox="0 0 20 20"
-//                               >
-//                                 <path d="M3.5 5.25c0-.966.784-1.75 1.75-1.75h.5a.75.75 0 0 1 0 1.5h-.5a.25.25 0 0 0-.25.25v.5a.75.75 0 0 1-1.5 0v-.5Z" />
-//                                 <path
-//                                   fillRule="evenodd"
-//                                   d="M3.5 13.25c0-.966.784-1.75 1.75-1.75h9.5c.966 0 1.75.784 1.75 1.75v1.5a1.75 1.75 0 0 1-1.75 1.75h-9.5a1.75 1.75 0 0 1-1.75-1.75v-1.5Zm1.75-.25a.25.25 0 0 0-.25.25v1.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-9.5Z"
-//                                 />
-//                                 <path d="M3.5 8.75c0 .966.784 1.75 1.75 1.75h.5a.75.75 0 0 0 0-1.5h-.5a.25.25 0 0 1-.25-.25v-.5a.75.75 0 0 0-1.5 0v.5Z" />
-//                                 <path d="M14.75 3.5c.966 0 1.75.784 1.75 1.75v.5a.75.75 0 0 1-1.5 0v-.5a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5Z" />
-//                                 <path d="M14.75 10.5a1.75 1.75 0 0 0 1.75-1.75v-.5a.75.75 0 0 0-1.5 0v.5a.25.25 0 0 1-.25.25h-.5a.75.75 0 0 0 0 1.5h.5Z" />
-//                                 <path d="M11.75 4.25a.75.75 0 0 1-.75.75h-2a.75.75 0 0 1 0-1.5h2a.75.75 0 0 1 .75.75Z" />
-//                                 <path d="M11 10.5a.75.75 0 0 0 0-1.5h-2a.75.75 0 0 0 0 1.5h2Z" />
-//                               </svg>
-//                               Footer
-//                             </p>
-//                           </div>
-//                         </div>
-//                       </div>
-//                       <div className="theme-setting">
-//                         <div className="section-title">
-//                           <h2>Theme settings</h2>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div>
-//                     <img
-//                       className="popover-image"
-//                       src="/assets/modalSkeleton.png"
-//                     />
-//                   </div>
-//                 </InlineStack>
-//               </InlineGrid>
-//             </BlockStack>
-//           ) : (
-//             <Box>
-//               <Box paddingBlockEnd={200}>
-//                 <Text variant="bodyMd" as="p">
-//                   This will make it easier for you to identify within the
-//                   Shopify Theme customizer.
-//                 </Text>
-//               </Box>
-
-//               <Box paddingBlockEnd={200}>
-//                 <Text variant="headingSm" as="h6">
-//                   Theme List
-//                 </Text>
-//               </Box>
-//               {themeList?.map((theme) => (
-//                 <Box key={theme.id}>
-//                   <RadioButton
-//                     key={theme.id}
-//                     label={
-//                       <span
-//                         className="Polaris-Text--root Polaris-Text--bodyMd"
-//                         style={{
-//                           display: "inline-block",
-//                           paddingTop: "0.3rem",
-//                           maxWidth: "200px",
-//                           whiteSpace: "normal",
-//                           wordWrap: "break-word",
-//                           overflow: "hidden",
-//                           textOverflow: "ellipsis",
-//                         }}
-//                       >
-//                         {theme.name}{" "}
-//                         {theme.role === "main" && (
-//                           <Badge variant="headingSm" tone="success">
-//                             Live
-//                           </Badge>
-//                         )}
-//                       </span>
-//                     }
-//                     checked={selectedTheme === theme.id}
-//                     id={theme.id}
-//                     name="theme"
-//                     onChange={() => handleSelectChange(theme.id)}
-//                   />
-//                 </Box>
-//               ))}
-//             </Box>
-//           )}
-//         </Modal.Section>
-//       </Modal>
-//     </Page>
-//   );
-// }
+              <Box paddingBlockEnd={200}>
+                <Text variant="headingSm" as="h6">
+                  Theme List
+                </Text>
+              </Box>
+              {themeList?.map((theme) => (
+                <Box key={theme.id}>
+                  <RadioButton
+                    key={theme.id}
+                    label={
+                      <span
+                        className="Polaris-Text--root Polaris-Text--bodyMd"
+                        style={{
+                          display: "inline-block",
+                          paddingTop: "0.3rem",
+                          maxWidth: "200px",
+                          whiteSpace: "normal",
+                          wordWrap: "break-word",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {theme.name}{" "}
+                        {theme.role === "main" && (
+                          <Badge variant="headingSm" tone="success">
+                            Live
+                          </Badge>
+                        )}
+                      </span>
+                    }
+                    checked={selectedTheme === theme.id}
+                    id={theme.id}
+                    name="theme"
+                    onChange={() => handleSelectChange(theme.id)}
+                  />
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Modal.Section>
+      </Modal>
+    </Page>
+  );
+}

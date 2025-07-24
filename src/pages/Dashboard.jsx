@@ -1024,7 +1024,7 @@ function MyLibrary() {
     queryKey: ["app_status"],
     queryFn: async () => {
       const response = await fetchJsonData(getApiURL("/app_status"));
-      return response.json();
+      return await response.json();
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -1034,7 +1034,7 @@ function MyLibrary() {
     queryKey: ["dashboard"],
     queryFn: async () => {
       const response = await fetchJsonData(getApiURL("/dashboard"));
-      return response.json();
+      return await response.json();
     },
     staleTime: 0,
     refetchOnMount: true,

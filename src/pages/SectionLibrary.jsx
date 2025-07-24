@@ -95,7 +95,7 @@ function Library() {
     "Compare",
   ];
 
-  const { data: listingApiData, isLoading: isListingApiCall } = useQuery({
+  const { data: listingApiData, isPending: isApicalling } = useQuery({
     queryKey: ["listing", sort],
     queryFn: async () => {
       const formdata = new FormData();
@@ -103,11 +103,12 @@ function Library() {
       formdata.append("sort", sort);
       formdata.append("type", "sections");
       const response = await fetchData(getApiURL("/listing"), formdata);
-      return response;
+      return await response;
     },
     staleTime: 0,
     refetchOnMount: true,
   });
+  console.log('listingApiData', listingApiData)
 
   const handleBannerButtonClick = () => {
     setAppStatus((prev) => ({
@@ -178,7 +179,7 @@ function Library() {
     queryKey: ["app_status"],
     queryFn: async () => {
       const response = await fetchData(getApiURL("/app_status"));
-      return response;
+      return await response;
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -194,7 +195,7 @@ function Library() {
     queryKey: ["theme_list"],
     queryFn: async () => {
       const response = await fetchData(getApiURL("/theme_list"));
-      return response;
+      return await response;
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -456,10 +457,11 @@ function Library() {
                       </BlockStack>
                     </Card>
                   </div>
+
                   <div
                     className="Polaris-Grid-Cell Polaris-Grid-Cell--cell_4ColumnXs Polaris-Grid-Cell--cell_2ColumnSm Polaris-Grid-Cell--cell_2ColumnMd Polaris-Grid-Cell--cell_9ColumnLg Polaris-Grid-Cell--cell_9ColumnXl"
                     style={
-                      isListingApiCall !== false
+                      isApicalling
                         ? { height: "100%" }
                         : {
                             height: "100%",
@@ -467,7 +469,7 @@ function Library() {
                           }
                     }
                   >
-                    {isListingApiCall ? (
+                    {isApicalling ? (
                       <Skeleton_Page />
                     ) : (
                       <>

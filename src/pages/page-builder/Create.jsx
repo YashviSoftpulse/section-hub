@@ -137,7 +137,7 @@ function Create() {
     ThemeListing();
   }, [addSectionModalOpen, preview]);
 
-  const { data: listingApiData, isLoading: isListingApiCall } = useQuery({
+  const { data: listingApiData, isPending: isListingApiCall } = useQuery({
     queryKey: ["listing", sort],
     queryFn: async () => {
       const formdata = new FormData();
@@ -146,7 +146,7 @@ function Create() {
       formdata.append("type", "sections");
       formdata.append("page_builder", true);
       const response = await fetchData(getApiURL("/listing"), formdata);
-      return response;
+      return await response;
     },
     staleTime: 0,
     refetchOnMount: true,
