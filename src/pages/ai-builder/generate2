@@ -66,7 +66,6 @@ export default function Generate() {
   const SHOP = urlParams.get("shop");
   const nodomainShop = SHOP?.replace(".myshopify.com", "");
   const chatScrollContainerRef = useRef(null);
-   const initialFetchDone = useRef(false);
 
   const {
     data: generatedSection,
@@ -81,15 +80,12 @@ export default function Generate() {
       formData.append("prompt", finalPrompt);
 
       const response = await fetchData(getApiURL("/call"), formData);
-      console.log('response', response)
-      const content = response?.candidates[0]?.content?.parts[0]?.text;
+      const content = response?.choices[0]?.message?.content;
       return content;
     },
     enabled: false,
     retry: false,
   });
-
-  console.log('generatedSection', generatedSection)
 
   const saveSection = async () => {
     if (!savingName.trim()) {
@@ -119,17 +115,15 @@ export default function Generate() {
         formData
       );
       if (response.status === true) {
+        shopify.toast.show("Section saved successfully.", { duration: 2000 });
         setOpenSaveModal(false);
         setSavingName("");
         setHasMoreChats(true);
         fetchChatList(1);
-        setQuery("")
-           shopify.toast.show("Section saved successfully.", { duration: 2000 });
       } else {
         const errorMessage =
           response.message || "Save failed. Please try again.";
         shopify.toast.show(errorMessage, { duration: 2000, isError: true });
-        setSavingName("");
       }
     } catch (error) {
       shopify.toast.show("An unexpected error occurred. Please try again.", {
@@ -141,33 +135,31 @@ export default function Generate() {
     }
   };
 
-
-    const fetchChatList = useCallback(
+  const fetchChatList = useCallback(
     async (pageToFetch) => {
-      // The guard for loading/hasMore is now inside the function, not the dependency array
       if (isChatLoading || !hasMoreChats) return;
-
       setIsChatLoading(true);
 
       try {
         const formData = new FormData();
-        formData.append("limit", "10"); 
+        formData.append("limit", "10");
         formData.append("page", pageToFetch.toString());
-
         const response = await fetchData(getApiURL("/chat-details"), formData);
 
         if (response.status === true) {
           const newData = response.data || {};
-          const newItemsCount = Object.values(newData).flat().length;
+          const newItems = Object.values(newData).flat();
 
-          if (newItemsCount > 0) {
+          if (newItems.length > 0) {
             setChatData((prevChatData) => {
               const updatedChatData = { ...prevChatData };
               Object.entries(newData).forEach(([date, items]) => {
                 const existingItems = updatedChatData[date] || [];
-                const existingIds = new Set(existingItems.map((i) => i.file_name));
+                const existingIds = new Set(
+                  existingItems.map((i) => i.id || i.file_name)
+                );
                 const newUniqueItems = items.filter(
-                  (i) => !existingIds.has(i.file_name)
+                  (i) => !existingIds.has(i.id || i.file_name)
                 );
                 if (newUniqueItems.length > 0) {
                   updatedChatData[date] = [...existingItems, ...newUniqueItems];
@@ -180,58 +172,51 @@ export default function Generate() {
             setHasMoreChats(false);
           }
         } else {
-          shopify.toast.show(response.message || "Failed to fetch chat history.", { duration: 2000 });
+          // It's good practice to check for a message in the response
+          const errorMessage =
+            response.message || "Failed to fetch chat history.";
+          shopify.toast.show(errorMessage, { duration: 2000 });
           setHasMoreChats(false);
         }
       } catch (error) {
+        // Handle potential network errors or exceptions from fetchData
         shopify.toast.show("An error occurred while fetching history.", {
           duration: 2000,
         });
-        setHasMoreChats(false);
+        setHasMoreChats(false); // Stop trying to fetch more if there's an error
       } finally {
         setIsChatLoading(false);
       }
     },
-    // The dependency array is EMPTY.
-    // This tells React the function NEVER changes.
-    // State setters (like setIsChatLoading) are stable and don't need to be dependencies.
-    // State values (like isChatLoading) are accessed directly inside, reflecting the latest state on execution.
     [isChatLoading, hasMoreChats]
   );
 
   const handleScroll = useCallback(
     debounce(() => {
       const el = chatScrollContainerRef.current;
-      // This check remains the same and is correct.
       if (!el || isChatLoading || !hasMoreChats) return;
 
-      const isNearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 150;
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 150;
 
       if (isNearBottom) {
         fetchChatList(chatPage);
       }
     }, 200),
-    // The dependencies for the scroll handler are correct because it needs to know the *current values* of these states to work.
-    [chatPage, isChatLoading, hasMoreChats, fetchChatList]
+    [chatPage, fetchChatList, hasMoreChats, isChatLoading]
   );
 
   useEffect(() => {
     const el = chatScrollContainerRef.current;
-    if (el) {
-        el.addEventListener("scroll", handleScroll);
-        return () => el.removeEventListener("scroll", handleScroll);
-    }
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  // --- CORRECTED INITIAL FETCH EFFECT ---
   useEffect(() => {
-    // Use the ref to ensure this code runs ONLY ONCE.
-    // This is robust against React.StrictMode's double-invocation in development.
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true; // Mark as done
-      fetchChatList(1); // Call the API
-    }
-  }, [fetchChatList]); 
+    fetchChatList(1);
+  }, []);
+
   const handleCopy = async () => {
     const data = generatedSection || previewHtml;
     if (!data) return;

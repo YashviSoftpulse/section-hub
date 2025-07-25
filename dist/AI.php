@@ -184,9 +184,9 @@ class AI extends MY_Controller {
 
     public function chat_details(){
         header("Content-Type: application/json");
-        $limit = (int) $this->input->get('limit') ?: 10;
-        $page = (int) $this->input->get('page') ?: 1;
-        
+        $limit = (int) $this->input->post('limit', true) ?: 10;
+        $page = (int) $this->input->post('page', true) ?: 1;
+
         $data = $this->Ai_sections->get_all_paginated('*', ['shop' => $this->shop], $page, $limit, null, []);
         $grouped = [];
 
@@ -208,7 +208,7 @@ class AI extends MY_Controller {
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $limit,
-                'total_rows' => $total_rows,
+                // 'total_rows' => $total_rows,
                 'total_pages' => ceil($total_rows / $limit)
             ]
         ]);
@@ -222,74 +222,62 @@ class AI extends MY_Controller {
             $this->send_response('false', "Please provide a prompt.");
 
 
-        $content =  $prompt . <<<EOT
- Generate a reusable Shopify 2.0 section in Liquid :
+        $content = $prompt . <<<EOT
+      You are a world-class Shopify Liquid developer and a senior UI/UX designer. Your task is to generate a single, complete, production-ready Shopify section file based on the user's request.
 
-General Requirements for All Sections:
-- Absolute Completeness : You MUST generate the entire, complete Shopify Liquid section code. This includes ensuring all JSON objects and arrays within the schema are properly opened and closed with their corresponding brackets ({} and []), and that all Liquid tags (e.g., {% endfor %}, {% endif %}) are correctly paired and closed. Do not stop early or truncate the output.
-- Encapsulation: All CSS styles MUST be strictly scoped inside a <style> tag, using #sp-{{ section.id }} as the primary parent selector to ensure no style leakage. Design Requirements: - class name must be start sh-
-- Use **standard CSS only** (do not use Tailwind or utility classes)
-- Must include: font styles, padding, margin, spacing, borders, colors, backgrounds, etc.
-- All styles must be scoped inside `#sp-{{ section.id }}`
-- Ensure **full responsiveness**: works well on desktop, tablet, and mobile
-- Include proper heading levels, button styles, inputs (if any), and image styling
-- Liquid + HTML Structure: Generate clean Liquid and HTML content, incorporating dynamic values from the section's settings and blocks.
-- Code Quality: The generated Liquid code must be clean, proper, and render without any errors.
-- Output Format :
-    - Output ONLY the full Shopify Liquid section code.
-    - No introductory or concluding text, explanations, or extraneous commentary.
-    - No wrapping code block (for example, do not use triple backticks or any code fencing).
-    - No inline or block comments within the generated code (Liquid, HTML, CSS, JS).
-    - No Markdown formatting (e.g., bold, italics, lists, etc.) outside of the code itself.
-- Final Output Order :
-    1. <style> block
-    2. HTML content (with Liquid for dynamic values and block iteration)
-    3. <script> block (optional, but include if interactivity is needed)
-    4. {% schema %} ... {% end endschema %} block
+      // --- CRITICAL OUTPUT FORMATTING RULES --- //
+      1. The final output MUST be a single block of raw, clean code.
+      2. Do NOT wrap the code in markdown backticks. For example, do not start with ```liquid or end with ```.
+      3. Do NOT include any explanations, introductions, or any HTML/Liquid comments. The output must be ONLY the code itself.
 
-Schema Requirements (Crucial for Reusability and Valid Structure): - “name": "SH: [Descriptive Title Based on instruction]",
-- name: A clear, descriptive, max 25 latter and human-readable name for the section.
-- tag & class: Always include "tag": "section" and "class": "section" for proper theme integration.
-- settings Array:
-    - Use settings for global section configurations (e.g., title, description, background image).
-    - Use appropriate type values for settings (e.g., text, richtext, image_picker, range, select, url).
-    - Each setting must have a valid id (snake_case), label (human-readable), and optionally default values.
-    - Crucial Default Value Handling:
-        - For type: 'richtext' settings, the default value MUST be valid HTML, starting with a block-level tag like <p>, <h1> through <h6>, <ul>, or <ol>. For example: "default": "<p>Your default description text here.</p>".
-        - For type: 'image_picker' settings, DO NOT include a default attribute. This type does not support a default image.
-    - Avoid other invalid setting attributes. Only use attributes valid for the specified type.
-- blocks Array (for repeatable content/components within the section):
-    - If the section requires repeatable elements (e.g., testimonials, slides, hotspots, features), define them as blocks.
-    - Each block must have a type (snake_case, unique within the section), name (human-readable), and its own settings array.
-    - block settings follow the same rules as section settings.
-- presets Array:
-    - Always include a presets array for the section to appear in the theme editor's "Add section" list.
-    - Presets must start with "name": "SH : "(e.g., `"name": "SH : Contact Form 2"`)
-    - If the section uses blocks, include an empty blocks array or an array of default block types within the preset to allow users to add blocks.
+      // --- CRITICAL INSTRUCTIONS FOR SLIDESHOWS --- //
+      For any request involving a "slideshow", "slider", or "carousel", you MUST follow this specific implementation pattern:
 
-Interactivity Requirements:
-- If the section requires JavaScript for interactivity (e.g., sliders, tabs, hotspots), embed it within a <script> tag.
-- All JavaScript must be self-contained and scoped to #sp-{{ section.id }} to prevent global conflicts. Use document.getElementById('sp-{{ section.id }}') to select the section's root element.
-EOT;
+      1.  **JavaScript is Mandatory:** A slideshow is interactive and MUST use vanilla JavaScript inside a <script> tag.
+      2.  **Schema MUST Use 'blocks':** The schema's primary feature must be a 'blocks' setting of type 'slide'. This allows merchants to add/remove slides. Each block must have its own settings (e.g., 'image', 'heading').
+      3.  **HTML Structure:** Loop through 'section.blocks' to render each slide. Only ONE slide should be visible at a time. The JavaScript will control visibility by adding/removing an 'is-active' or 'sp-slide--visible' class.
+      4.  **Navigation Controls are Mandatory:** You MUST include 'previous'/'next' navigation buttons (using inline SVGs) and pagination dots for each slide.
+      5.  **Section-Level Settings:** Include schema settings for "Auto-rotate slides" (checkbox) and "Change slides every" (range slider).
 
-        $payload = [
-            "model" => "google/gemma-3n-e4b-it:free",
-            "messages" => [
-                [
-                    "role" => "user",
-                    "content" => $content
-                ]
-            ]
+      // --- GENERAL QUALITY RULES (MUST ALSO BE FOLLOWED) --- //
+
+      *   **Design and Responsiveness:**
+          *   **Visually Excellent:** The design must be modern and professional. Text over images must be readable (use an overlay if needed).
+          *   **Fully Responsive:** Use a mobile-first approach with CSS @media queries (e.g., min-width: 768px) to ensure it looks perfect on all devices.
+
+      *   **Code Structure (Four-Part Output):** The final output must be in this exact order:
+          *   **Part 1: <style> block:** CSS class names start with "sp-". All rules scoped under "#sp-{{ section.id }}".
+          *   **Part 2: HTML content:** Semantic HTML using Liquid variables from the schema.
+          *   **Part 3: <script> tag:** The mandatory JavaScript for any interactive functionality. Omit if not needed.
+          *   **Part 4: {% schema %} block:** The schema with all necessary settings and a preset. The preset name MUST start with "SH : ".
+      EOT;
+
+        // $payload = [
+        //     "model" => "google/gemma-3n-e4b-it:free",
+        //     "messages" => [
+        //         [
+        //             "role" => "user",
+        //             "content" => $content
+        //         ]
+        //     ]
+        // ];
+
+      $payload = [
+            "contents" => [
+                ["parts" => [["text" => $content]]]
+            ],
         ];
-
+        $apiKey = 'AIzaSyAX2r4N4J0OvuEpaMN1e3EqeTsJqZpW_4Q';
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL => "https://openrouter.ai/api/v1/chat/completions",
+            // CURLOPT_URL => "https://openrouter.ai/api/v1/chat/completions",
+            CURLOPT_URL => "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($payload),
             CURLOPT_HTTPHEADER => [
-                "Authorization: Bearer " . OPENAI_KEY,
+                // "Authorization: Bearer " . OPENAI_KEY,
+                
                 "Content-Type: application/json"
             ]
         ]);

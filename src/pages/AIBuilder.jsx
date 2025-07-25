@@ -52,7 +52,6 @@ const AIBuilder = () => {
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(creditUsageRows);
 
-  // Query: AI Library
   const {
     data: aiLibraryData,
     isLoading: isAiLibraryLoading,
