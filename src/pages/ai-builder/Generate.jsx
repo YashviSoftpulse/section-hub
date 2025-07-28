@@ -10,11 +10,9 @@ import {
   Page,
   Layout,
   Card,
-  Banner,
   Button,
   TextField,
   Text,
-  Divider,
   InlineStack,
   BlockStack,
   Tooltip,
@@ -23,10 +21,10 @@ import {
   RadioButton,
   Badge,
   OptionList,
-  Scrollable,
   InlineGrid,
   List,
   SkeletonBodyText,
+  Bleed,
 } from "@shopify/polaris";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -66,7 +64,7 @@ export default function Generate() {
   const SHOP = urlParams.get("shop");
   const nodomainShop = SHOP?.replace(".myshopify.com", "");
   const chatScrollContainerRef = useRef(null);
-   const initialFetchDone = useRef(false);
+  const initialFetchDone = useRef(false);
 
   const {
     data: generatedSection,
@@ -79,17 +77,13 @@ export default function Generate() {
       setSelectedPrompt({});
       const formData = new FormData();
       formData.append("prompt", finalPrompt);
-
       const response = await fetchData(getApiURL("/call"), formData);
-      console.log('response', response)
       const content = response?.candidates[0]?.content?.parts[0]?.text;
       return content;
     },
     enabled: false,
     retry: false,
   });
-
-  console.log('generatedSection', generatedSection)
 
   const saveSection = async () => {
     if (!savingName.trim()) {
@@ -99,7 +93,6 @@ export default function Generate() {
       });
       return;
     }
-
     setIsSaving(true);
     try {
       const finalPrompt = query;
@@ -113,7 +106,6 @@ export default function Generate() {
         filename
       );
       formData.append("prompt", finalPrompt);
-
       const response = await fetchData(
         getApiURL("/ai-sections/save"),
         formData
@@ -123,8 +115,8 @@ export default function Generate() {
         setSavingName("");
         setHasMoreChats(true);
         fetchChatList(1);
-        setQuery("")
-           shopify.toast.show("Section saved successfully.", { duration: 2000 });
+        setQuery("");
+        shopify.toast.show("Section saved successfully.", { duration: 2000 });
       } else {
         const errorMessage =
           response.message || "Save failed. Please try again.";
@@ -141,31 +133,28 @@ export default function Generate() {
     }
   };
 
-
-    const fetchChatList = useCallback(
+  const fetchChatList = useCallback(
     async (pageToFetch) => {
-      // The guard for loading/hasMore is now inside the function, not the dependency array
       if (isChatLoading || !hasMoreChats) return;
-
       setIsChatLoading(true);
 
       try {
         const formData = new FormData();
-        formData.append("limit", "10"); 
+        formData.append("limit", "10");
         formData.append("page", pageToFetch.toString());
-
         const response = await fetchData(getApiURL("/chat-details"), formData);
 
         if (response.status === true) {
           const newData = response.data || {};
           const newItemsCount = Object.values(newData).flat().length;
-
           if (newItemsCount > 0) {
             setChatData((prevChatData) => {
               const updatedChatData = { ...prevChatData };
               Object.entries(newData).forEach(([date, items]) => {
                 const existingItems = updatedChatData[date] || [];
-                const existingIds = new Set(existingItems.map((i) => i.file_name));
+                const existingIds = new Set(
+                  existingItems.map((i) => i.file_name)
+                );
                 const newUniqueItems = items.filter(
                   (i) => !existingIds.has(i.file_name)
                 );
@@ -180,7 +169,10 @@ export default function Generate() {
             setHasMoreChats(false);
           }
         } else {
-          shopify.toast.show(response.message || "Failed to fetch chat history.", { duration: 2000 });
+          shopify.toast.show(
+            response.message || "Failed to fetch chat history.",
+            { duration: 2000 }
+          );
           setHasMoreChats(false);
         }
       } catch (error) {
@@ -192,46 +184,37 @@ export default function Generate() {
         setIsChatLoading(false);
       }
     },
-    // The dependency array is EMPTY.
-    // This tells React the function NEVER changes.
-    // State setters (like setIsChatLoading) are stable and don't need to be dependencies.
-    // State values (like isChatLoading) are accessed directly inside, reflecting the latest state on execution.
     [isChatLoading, hasMoreChats]
   );
 
   const handleScroll = useCallback(
     debounce(() => {
       const el = chatScrollContainerRef.current;
-      // This check remains the same and is correct.
       if (!el || isChatLoading || !hasMoreChats) return;
-
-      const isNearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 150;
-
+      const isNearBottom =
+        el.scrollTop + el.clientHeight >= el.scrollHeight - 150;
       if (isNearBottom) {
         fetchChatList(chatPage);
       }
     }, 200),
-    // The dependencies for the scroll handler are correct because it needs to know the *current values* of these states to work.
     [chatPage, isChatLoading, hasMoreChats, fetchChatList]
   );
 
   useEffect(() => {
     const el = chatScrollContainerRef.current;
     if (el) {
-        el.addEventListener("scroll", handleScroll);
-        return () => el.removeEventListener("scroll", handleScroll);
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
     }
   }, [handleScroll]);
 
-  // --- CORRECTED INITIAL FETCH EFFECT ---
   useEffect(() => {
-    // Use the ref to ensure this code runs ONLY ONCE.
-    // This is robust against React.StrictMode's double-invocation in development.
     if (!initialFetchDone.current) {
-      initialFetchDone.current = true; // Mark as done
-      fetchChatList(1); // Call the API
+      initialFetchDone.current = true;
+      fetchChatList(1);
     }
-  }, [fetchChatList]); 
+  }, [fetchChatList]);
+
   const handleCopy = async () => {
     const data = generatedSection || previewHtml;
     if (!data) return;
@@ -247,7 +230,6 @@ export default function Generate() {
 
   const processCodeForPreview = (code) => {
     if (!code) return "";
-
     return code
       .replace(/```liquid/g, "")
       .replace(/```/g, "")
@@ -259,17 +241,14 @@ export default function Generate() {
   const extractHtmlContent = (processedCode) => {
     const styleMatch = processedCode.match(/<style>([\s\S]*?)<\/style>/);
     const htmlMatch = processedCode.match(/<\/style>([\s\S]*?)(?=<script>|$)/);
-
     const styles = styleMatch ? styleMatch[1] : "";
     const html = htmlMatch ? htmlMatch[1].trim() : processedCode;
-
     return { styles, html };
   };
 
   const handlePreview = () => {
     const data = generatedSection;
     if (!data) return;
-
     if (previewHtml) {
       setShowPreviewModal(true);
       return;
@@ -281,7 +260,6 @@ export default function Generate() {
       <style>${styles}</style>
       <div class="preview-container">${html}</div>
     `;
-
     setPreviewHtml(previewContent);
     setShowPreviewModal(true);
   };
@@ -290,7 +268,6 @@ export default function Generate() {
     const mDate = moment(date);
     const today = moment();
     const yesterday = moment().subtract(1, "days");
-
     if (mDate.isSame(today, "day")) {
       return "Today";
     } else if (mDate.isSame(yesterday, "day")) {
@@ -332,14 +309,12 @@ export default function Generate() {
     if (publish.status === true) {
       setPublishSuccess(publish.status);
       setIsPublishing(false);
-      setThemeListModal(false),
-        shopify.toast.show("Section Added Successfully.", { duration: 2000 });
+      shopify.toast.show("Section Added Successfully.", { duration: 2000 });
     } else {
       setIsPublishing(false);
-      setThemeListModal(false),
-        shopify.toast.show("Sorry! Process Failed. Please try again later.", {
-          duration: 2000,
-        });
+      shopify.toast.show("Sorry! Process Failed. Please try again later.", {
+        duration: 2000,
+      });
     }
   };
 
@@ -377,7 +352,6 @@ export default function Generate() {
         label: entry.chat_name,
       })),
     }));
-
     return entries;
   }, [chatData]);
 
@@ -403,9 +377,9 @@ export default function Generate() {
         <Layout.Section>
           <Layout>
             <Layout.Section variant="oneThird">
-              <Card title="History (4/day limit)">
-                <BlockStack gap={400}>
-                  <BlockStack gap={300}>
+              <Card>
+                <BlockStack gap={200}>
+                  <BlockStack gap={200}>
                     <InlineStack wrap={false}>
                       <Text>Describe the section you want to generate</Text>
                       <Tooltip content="New Chat">
@@ -416,6 +390,7 @@ export default function Generate() {
                             setQuery(""),
                               setPreviewHtml(""),
                               setSelectedPrompt({});
+                              setHasGeneratedOnce(false)
                           }}
                         ></Button>
                       </Tooltip>
@@ -426,6 +401,7 @@ export default function Generate() {
                           <textarea
                             id="r5"
                             className="Polaris-TextField__Input"
+                            placeholder="Ex. A hero banner with a placeholder background image, a heading, a subheading, and a call-to-action button."
                             type="text"
                             rows="5"
                             aria-labelledby="r5Label"
@@ -458,7 +434,6 @@ export default function Generate() {
                         </div>
                       </div>
                     </div>
-
                     <Button
                       variant="primary"
                       size="large"
@@ -469,54 +444,54 @@ export default function Generate() {
                       {hasGeneratedOnce ? "Regenerate" : "Generate"}
                     </Button>
                   </BlockStack>
-                  <Divider />
-                  <BlockStack gap={isChatLoading && 300}>
-                    <Text variant="headingMd">Prompt</Text>
-                    {isChatLoading ? (
-                      <BlockStack gap={400}>
-                        <SkeletonBodyText lines={1} />
-                        <SkeletonBodyText lines={1} />
-                        <SkeletonBodyText lines={1} />
-                        <SkeletonBodyText lines={1} />
-                        <SkeletonBodyText lines={1} />
-                        <SkeletonBodyText lines={1} />
-                      </BlockStack>
-                    ) : (
-                      <div
-                        ref={chatScrollContainerRef}
-                        onScroll={handleScroll}
-                        style={{
-                          height: "400px",
-                          overflowY: "auto",
-                          paddingRight: "1rem",
-                          boxSizing: "border-box",
-                          scrollbarWidth: "thin",
-                        }}
-                      >
-                        {Object.keys(chatData).length > 0 ? (
-                          <OptionList
-                            onChange={handleOptionListChange}
-                            selected={
-                              selectedPrompt?.id
-                                ? [selectedPrompt?.id]
-                                : selectedPrompt?.file_name
-                                ? [selectedPrompt?.file_name]
-                                : []
-                            }
-                            sections={chatOptions}
-                          />
-                        ) : (
-                          !hasMoreChats && <Text>No more history</Text>
-                        )}
-                      </div>
-                    )}
-                  </BlockStack>
+                  <Bleed marginInline={200}>
+                    <BlockStack gap={isChatLoading && 300}>
+                      {isChatLoading ? (
+                        <BlockStack gap={400}>
+                          <SkeletonBodyText lines={1} />
+                          <SkeletonBodyText lines={1} />
+                          <SkeletonBodyText lines={1} />
+                          <SkeletonBodyText lines={1} />
+                          <SkeletonBodyText lines={1} />
+                          <SkeletonBodyText lines={1} />
+                        </BlockStack>
+                      ) : (
+                        <div
+                          ref={chatScrollContainerRef}
+                          onScroll={handleScroll}
+                          style={{
+                            height: "400px",
+                            overflowY: "auto",
+                            paddingRight: "1rem",
+                            boxSizing: "border-box",
+                            scrollbarWidth: "thin",
+                          }}
+                        >
+                          {Object.keys(chatData).length > 0 ? (
+                            <OptionList
+                              onChange={handleOptionListChange}
+                              selected={
+                                selectedPrompt?.id
+                                  ? [selectedPrompt?.id]
+                                  : selectedPrompt?.file_name
+                                  ? [selectedPrompt?.file_name]
+                                  : []
+                              }
+                              sections={chatOptions}
+                            />
+                          ) : (
+                            !hasMoreChats && <Text>No more history</Text>
+                          )}
+                        </div>
+                      )}
+                    </BlockStack>
+                  </Bleed>
                 </BlockStack>
               </Card>
             </Layout.Section>
 
             <Layout.Section>
-              <BlockStack gap={400}>
+              <BlockStack gap={200}>
                 <Card title="Generated Code" sectioned>
                   <div
                     class="Polaris-InlineStack"
@@ -555,11 +530,11 @@ export default function Generate() {
                       whiteSpace: "pre-wrap",
                       wordBreak: "break-word",
                       background: "#f6f6f7",
-                      padding: "10px",
+                      padding: "10px ",
                       borderRadius: "6px",
                       fontFamily: "monospace",
                       overflow: "scroll",
-                      maxHeight: "600px",
+                      maxHeight: "555px",
                       height: "100%",
                       scrollbarWidth: "thin",
                     }}
@@ -575,7 +550,6 @@ export default function Generate() {
         </Layout.Section>
         <Layout.Section></Layout.Section>
       </Layout>
-
       <Modal
         open={openSaveModal}
         onClose={() => setOpenSaveModal(false)}
@@ -594,7 +568,6 @@ export default function Generate() {
           />
         </Modal.Section>
       </Modal>
-
       {showPreviewModal && (
         <Modal
           open={showPreviewModal}
@@ -642,7 +615,6 @@ export default function Generate() {
           </Modal.Section>
         </Modal>
       )}
-
       <Modal
         size={publishSuccess === true ? "large" : "small"}
         open={themeListModal}

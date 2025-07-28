@@ -74,6 +74,7 @@ const rootRoute = createRootRoute({
         <FastLink to={`/ai-builder${window.location.search}`}>
           AI Builder{" "}
         </FastLink>
+        <FastLink to={`/plans${window.location.search}`}>Plans</FastLink>
         <FastLink to={`/helpGuide${window.location.search}`}>
           Help Guide{" "}
         </FastLink>
@@ -169,14 +170,26 @@ export const aiBuilderRoute = createRoute({
 export const aiBuilderGenerateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: `/ai-builder/generate`,
-  component: lazyRouteComponent(() =>
-    import("./pages/ai-builder/Generate")
-  ),
+  component: lazyRouteComponent(() => import("./pages/ai-builder/Generate")),
   preload: true,
   pendingComponent: () => (
     <Page
       subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout pages, and elevate your brand."
       title="AI Builder"
+    ></Page>
+  ),
+});
+
+export const planPageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: `/plans`,
+  component: lazyRouteComponent(() => import("./pages/Plans")),
+  preload: true,
+  pendingComponent: () => (
+    <Page
+      subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout
+          pages, and elevate your brand."
+      title="Page Builder"
     ></Page>
   ),
 });
@@ -189,6 +202,7 @@ const routeTree = rootRoute.addChildren([
   createPageRoute,
   aiBuilderRoute,
   aiBuilderGenerateRoute,
+  planPageRoute
 ]);
 
 const router = createRouter({ routeTree });
@@ -201,9 +215,9 @@ if (!rootElement.innerHTML) {
     <AppProvider i18n={en}>
       <QueryClientProvider client={queryClient}>
         {/* <Provider store={store}> */}
-          {/* <PersistGate loading={null} persistor={persistor}> */}
-            <RouterProvider router={router} />
-          {/* </PersistGate>
+        {/* <PersistGate loading={null} persistor={persistor}> */}
+        <RouterProvider router={router} />
+        {/* </PersistGate>
         </Provider> */}
       </QueryClientProvider>
     </AppProvider>

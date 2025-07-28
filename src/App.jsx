@@ -21,6 +21,7 @@ function App() {
               Page Builder
             </Link>{" "}
             {/* <Link to={`/ai-builder${window.location.search}`}>AI Section Builder </Link> */}
+            <Link to={`/plans${window.location.search}`}>Plans</Link>{" "}
             <Link to={`/helpGuide${window.location.search}`}>Help Guide </Link>
           </NavMenu>
         </>

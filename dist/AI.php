@@ -230,26 +230,17 @@ class AI extends MY_Controller {
       2. Do NOT wrap the code in markdown backticks. For example, do not start with ```liquid or end with ```.
       3. Do NOT include any explanations, introductions, or any HTML/Liquid comments. The output must be ONLY the code itself.
 
-      // --- CRITICAL INSTRUCTIONS FOR SLIDESHOWS --- //
-      For any request involving a "slideshow", "slider", or "carousel", you MUST follow this specific implementation pattern:
-
-      1.  **JavaScript is Mandatory:** A slideshow is interactive and MUST use vanilla JavaScript inside a <script> tag.
-      2.  **Schema MUST Use 'blocks':** The schema's primary feature must be a 'blocks' setting of type 'slide'. This allows merchants to add/remove slides. Each block must have its own settings (e.g., 'image', 'heading').
-      3.  **HTML Structure:** Loop through 'section.blocks' to render each slide. Only ONE slide should be visible at a time. The JavaScript will control visibility by adding/removing an 'is-active' or 'sp-slide--visible' class.
-      4.  **Navigation Controls are Mandatory:** You MUST include 'previous'/'next' navigation buttons (using inline SVGs) and pagination dots for each slide.
-      5.  **Section-Level Settings:** Include schema settings for "Auto-rotate slides" (checkbox) and "Change slides every" (range slider).
-
       // --- GENERAL QUALITY RULES (MUST ALSO BE FOLLOWED) --- //
 
-      *   **Design and Responsiveness:**
-          *   **Visually Excellent:** The design must be modern and professional. Text over images must be readable (use an overlay if needed).
-          *   **Fully Responsive:** Use a mobile-first approach with CSS @media queries (e.g., min-width: 768px) to ensure it looks perfect on all devices.
+      *Design and Responsivene
+          *Visually Excelle The design must be modern and professional. Text over images must be readable (use an overlay if needed).
+          *Fully Responsi Use a mobile-first approach with CSS @media queries (e.g., min-width: 768px) to ensure it looks perfect on all devices.
 
-      *   **Code Structure (Four-Part Output):** The final output must be in this exact order:
-          *   **Part 1: <style> block:** CSS class names start with "sp-". All rules scoped under "#sp-{{ section.id }}".
-          *   **Part 2: HTML content:** Semantic HTML using Liquid variables from the schema.
-          *   **Part 3: <script> tag:** The mandatory JavaScript for any interactive functionality. Omit if not needed.
-          *   **Part 4: {% schema %} block:** The schema with all necessary settings and a preset. The preset name MUST start with "SH : ".
+      *Code Structure (Four-Part Outpu The final output must be in this exact order:
+          *Part 1: <style> blo CSS class names start with "sp-". All rules scoped under "#sp-{{ section.id }}".
+          *Part 2: HTML conte Semantic HTML using Liquid variables from the schema.
+          *Part 3: <script> t The mandatory JavaScript for any interactive functionality. Omit if not needed.
+          *Part 4: {% schema %} blo The schema with all necessary settings and a preset. The preset name MUST start with "SH : " and not set 'SH : Default' .
       EOT;
 
         // $payload = [

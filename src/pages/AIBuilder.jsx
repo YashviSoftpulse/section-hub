@@ -94,72 +94,11 @@ const AIBuilder = () => {
       <Layout>
         <Layout.Section>
           <BlockStack gap="300">
-            <Text variant="headingMd">Credit Usage</Text>
-            <Card>
-              <Bleed marginInline="400" marginBlock={300}>
-                <IndexTable
-                  resourceName={resourceName}
-                  itemCount={creditUsageRows.length}
-                  selectedItemsCount={
-                    allResourcesSelected ? "All" : selectedResources.length
-                  }
-                  onSelectionChange={handleSelectionChange}
-                  headings={[
-                    { title: "Sections" },
-                    { title: "Credit Used" },
-                    { title: "Created At" },
-                  ]}
-                  selectable={false}
-                  isLoading={isUsedCreditsLoading}
-                  pagination={{
-                    hasPrevious: creditsPage > 1,
-                    onPrevious: () =>
-                      setCreditsPage((prev) => Math.max(prev - 1, 1)),
-                    hasNext:
-                      creditsPage < (usedCreditsData?.meta?.total_pages || 1),
-                    onNext: () => setCreditsPage((prev) => prev + 1),
-                  }}
-                >
-                  {creditUsageRows.map(
-                    ({ id, file_name, credits_used, date }, index) => (
-                      <IndexTable.Row
-                        id={id}
-                        key={id}
-                        selected={selectedResources.includes(id)}
-                        position={index}
-                      >
-                        <IndexTable.Cell>
-                          <BlockStack gap="100">
-                            {file_name.split(",").map((file, idx , arr) => (
-                              <>
-                                <Text variant="bodyMd" as="p" key={idx}>
-                                  {file.trim()}
-                                </Text>
-                            
-                              </>
-                            ))}
-                          </BlockStack>
-                        </IndexTable.Cell>
-                        <IndexTable.Cell>{credits_used}</IndexTable.Cell>
-                        <IndexTable.Cell>
-                          {moment(date).format("D MMM YYYY")}
-                        </IndexTable.Cell>
-                      </IndexTable.Row>
-                    )
-                  )}
-                </IndexTable>
-              </Bleed>
-            </Card>
-          </BlockStack>
-        </Layout.Section>
-
-        <Layout.Section>
-          <BlockStack gap="300">
             <Text variant="headingMd" as="h2">
-              AI Sections Library
+              Your Generated AI Sections
             </Text>
             <Card>
-              <Bleed marginInline="400" marginBlock={300}>
+              <Bleed marginInline="400" marginBlock={400}>
                 <IndexTable
                   resourceName={sectionResourceName}
                   itemCount={paginatedAiLibraryItems.length || 0}
@@ -179,21 +118,21 @@ const AIBuilder = () => {
                   loading={isAiLibraryLoading}
                   pagination={{
                     hasPrevious: aiLibraryPage > 1,
-                    onPrevious: () =>
-                      setAiLibraryPage((prev) => Math.max(prev - 1, 1)),
+                    onPrevious: () =>  setAiLibraryPage((prev) => Math.max(prev - 1, 1)),
                     hasNext: aiLibraryPage < totalAiLibraryPages,
                     onNext: () => setAiLibraryPage((prev) => prev + 1),
                   }}
                   emptyState={
-                    <EmptyState
-                      heading="AI Sections Not Yet Published"
-                      image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                    >
-                      <p>
-                        There’s nothing live in your theme yet. Use the AI
-                        builder to create and publish your first section.
-                      </p>
-                      {/* <Button
+                    paginatedAiLibraryItems.length === 0 && (
+                      <EmptyState
+                        heading="AI Sections Not Yet Published"
+                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                      >
+                        <p>
+                          There’s nothing live in your theme yet. Use the AI
+                          builder to create and publish your first section.
+                        </p>
+                        {/* <Button
                         onClick={() =>
                           navigate({
                             href: `/ai-builder/generate${window.location.search}`,
@@ -202,7 +141,8 @@ const AIBuilder = () => {
                       >
                         Generate with AI
                       </Button> */}
-                    </EmptyState>
+                      </EmptyState>
+                    )
                   }
                 >
                   {paginatedAiLibraryItems.map(
@@ -242,6 +182,66 @@ const AIBuilder = () => {
             </Card>
           </BlockStack>
         </Layout.Section>
+        <Layout.Section>
+          <BlockStack gap="300">
+            <Text variant="headingMd">Credit Usage</Text>
+            <Card>
+              <Bleed marginInline="400" marginBlock={400}>
+                <IndexTable
+                  resourceName={resourceName}
+                  itemCount={creditUsageRows.length}
+                  selectedItemsCount={
+                    allResourcesSelected ? "All" : selectedResources.length
+                  }
+                  onSelectionChange={handleSelectionChange}
+                  headings={[
+                    { title: "Sections" },
+                    { title: "Credit Used" },
+                    { title: "Created At" },
+                  ]}
+                  selectable={false}
+                  isLoading={isUsedCreditsLoading}
+                  pagination={{
+                    hasPrevious: creditsPage > 1,
+                    onPrevious: () =>
+                      setCreditsPage((prev) => Math.max(prev - 1, 1)),
+                    hasNext:
+                      creditsPage < (usedCreditsData?.meta?.total_pages || 1),
+                    onNext: () => setCreditsPage((prev) => prev + 1),
+                  }}
+                >
+                  {creditUsageRows.map(
+                    ({ id, file_name, credits_used, date }, index) => (
+                      <IndexTable.Row
+                        id={id}
+                        key={id}
+                        selected={selectedResources.includes(id)}
+                        position={index}
+                      >
+                        <IndexTable.Cell>
+                          <BlockStack gap="100">
+                            {file_name.split(",").map((file, idx, arr) => (
+                              <>
+                                <Text variant="bodyMd" as="p" key={idx}>
+                                  {file.trim()}
+                                </Text>
+                              </>
+                            ))}
+                          </BlockStack>
+                        </IndexTable.Cell>
+                        <IndexTable.Cell>{credits_used}</IndexTable.Cell>
+                        <IndexTable.Cell>
+                          {moment(date).format("D MMM YYYY")}
+                        </IndexTable.Cell>
+                      </IndexTable.Row>
+                    )
+                  )}
+                </IndexTable>
+              </Bleed>
+            </Card>
+          </BlockStack>
+        </Layout.Section>
+
         <Layout.Section></Layout.Section>
         <Layout.Section></Layout.Section>
       </Layout>
