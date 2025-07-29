@@ -92,7 +92,7 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
                 size="medium"
                 variant="secondary"
                 icon={ViewIcon}
-                disabled={planCheck?.version === "2" && showPaidBadge}
+               
               />
             </Tooltip>
           </div>

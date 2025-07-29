@@ -475,7 +475,7 @@ export default function Generate() {
                               sections={chatOptions}
                             />
                           ) : (
-                            !hasMoreChats && <Text>No more history</Text>
+                            !hasMoreChats && <Box padding={200}><Text>No more history</Text></Box> 
                           )}
                         </div>
                       

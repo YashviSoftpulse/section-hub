@@ -49,7 +49,7 @@ function Library() {
   const [themeListModal, setThemeListModal] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [modalSectionId, setModalSectionId] = useState(null);
-  const [sort, setSort] = useState("newArrival");
+  const [sort, setSort] = useState("bestSeller");
   const [IsMobileView, setIsMobileView] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef(null);
@@ -72,6 +72,8 @@ function Library() {
   const { planCheck } = useApiData();
 
   const Filter = [
+    "Free",
+    "Paid",
     "Banner",
     "Video",
     "Image",
@@ -239,7 +241,13 @@ function Library() {
       filtered = filtered.filter((section) =>
         selectedFilters.some((filter) => {
           const name = section?.name?.toLowerCase();
+        const plan = section?.plan?.toLowerCase(); 
+
           switch (filter) {
+            case "Free":
+              return plan === "free";
+            case "Paid":
+              return plan === "basic" || plan === "premium";
             case "Collection":
               return name.includes("collection") || name.includes("category");
             case "Image":
@@ -260,7 +268,13 @@ function Library() {
     const counts = Filter.reduce((acc, filter) => {
       acc[filter] = sectionsData?.filter((section) => {
         const name = section?.name?.toLowerCase();
+        const plan = section?.plan?.toLowerCase(); 
+
         switch (filter) {
+          case "Free":
+            return plan === "free";
+          case "Paid":
+            return plan === "basic" || plan === "premium";
           case "Collection":
             return name.includes("collection") || name.includes("category");
           case "Image":

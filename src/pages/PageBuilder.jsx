@@ -260,11 +260,11 @@ function PageBuilder() {
     formdata.append("type", "templates");
     formdata.append("title", selectedPage);
     formdata.append("internal_title", internalName);
-
     const publish = await fetchData(getApiURL("/updateShopifyTheme"), formdata);
     if (publish.status === true) {
       setPublishSuccess(publish);
       setIsPublishing(false);
+      setThemeListModal(false);
       const formdata = new FormData();
       formdata.append("type", "My pages");
       const response = await fetchData(
@@ -279,7 +279,8 @@ function PageBuilder() {
     } else {
       setInternalName("");
       setIsPublishing(false);
-      shopify.toast.show("Sorry! Process Failed. Please try again later.", {
+      setThemeListModal(false);
+      shopify.toast.show(publish.message, {
         duration: 2000,
       });
     }
@@ -298,7 +299,7 @@ function PageBuilder() {
             onClick={() => {
               if (
                 planCheck?.version === "2" &&
-                planCheck.plan_details.name === "Free"
+                planCheck?.plan_details?.name === "Free"
               ) {
                 setPremiumModal(true);
               } else {
@@ -750,7 +751,7 @@ function PageBuilder() {
                                     size="medium"
                                     variant="secondary"
                                     icon={ViewIcon}
-                                    disabled={showPaidBadge}
+                                    
                                   />
                                 </Tooltip>
                               </InlineStack>
@@ -838,7 +839,8 @@ function PageBuilder() {
                 <Modal.Section>
                   <BlockStack gap="200">
                     <Text variant="bodyMd" as="p">
-                     Ready to stand out? Upgrade now to create custom pages and use every premium feature.
+                      Ready to stand out? Upgrade now to create custom pages and
+                      use every premium feature.
                     </Text>
                   </BlockStack>
                 </Modal.Section>
@@ -956,17 +958,16 @@ function PageBuilder() {
                               to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                               target="blank"
                             >
-                              Theme Customizer
+                               Theme Customizer
+                             
                             </Link>{" "}
                             of Selected Theme
                           </List.Item>
                           <List.Item>
                             Select Page{" "}
                             <b>
-                              {selectedPage
-                                ?.toLowerCase()
-                                ?.replace(/[()]/g, "")
-                                ?.replace(/ /g, "-")}
+                              {selectedPage}
+                              {/* {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")} */}
                             </b>{" "}
                             Option From the Dropdown{" "}
                           </List.Item>
@@ -1132,10 +1133,8 @@ function PageBuilder() {
                                   </svg>
                                   <div>
                                     <p style={{ fontWeight: "bold" }}>
-                                      {selectedPage
-                                        ?.toLowerCase()
-                                        ?.replace(/[()]/g, "")
-                                        ?.replace(/ /g, "-")}
+                                      {selectedPage}
+                                      {/* {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")} */}
                                     </p>
                                     <span>Assigned to 0 pages</span>
                                   </div>

@@ -63,7 +63,7 @@ function Create() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [viewingSection, setViewingSection] = useState(null);
-  const [sort, setSort] = useState("newArrival");
+  const [sort, setSort] = useState("bestSeller");
   const [themeModal, setThemeModal] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
   const [active, setActive] = useState(false);
@@ -381,11 +381,15 @@ function Create() {
       setIsSave(false);
       setPublishSuccess(publishPage);
       shopify.toast.show("Page Saved Successfully.", { duration: 2000 });
-    } else
+    } else {
+      setSaveLoader(false);
+      setModalOpen(false);
+      setIsSave(false);
       shopify.toast.show(publishPage.message, {
         isError: true,
         duration: 2000,
       });
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -586,23 +590,19 @@ function Create() {
                             />
                           </InlineStack> */}
 
-                          {selectedSection.map(
-                            (section, index) => (
-                              (
-                                <img
-                                  alt={section.name}
-                                  key={index}
-                                  width="100%"
-                                  height="100%"
-                                  style={{
-                                    objectFit: "cover",
-                                    objectPosition: "center",
-                                  }}
-                                  src={section?.page_builder_preview_img[0]}
-                                />
-                              )
-                            )
-                          )}
+                          {selectedSection.map((section, index) => (
+                            <img
+                              alt={section.name}
+                              key={index}
+                              width="100%"
+                              height="100%"
+                              style={{
+                                objectFit: "cover",
+                                objectPosition: "center",
+                              }}
+                              src={section?.page_builder_preview_img[0]}
+                            />
+                          ))}
                         </BlockStack>
                       </div>
                     )}
@@ -914,7 +914,7 @@ function Create() {
 
                   <List gap="loose" type="number">
                     <List.Item>
-                      Go to 
+                      Go to{" "}
                       <Link
                         to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                         target="blank"
