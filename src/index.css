@@ -94,7 +94,7 @@
 .section-img-modal {
   width: clamp(61.25rem, 1000px, 1000px);
   min-height: 85.102vh;
-  max-width: unset ;
+  max-width: unset;
 }
 
 .section-img-modal .swiper-slide img {
@@ -237,8 +237,8 @@
 
 .lazyContent {
   opacity: 0;
-  transform: translateY(5px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(2px);
+  transition: opacity 0.1s ease, transform 0.1s ease;
 }
 
 .lazyContent.loaded {
@@ -527,24 +527,29 @@
 }
 
 .section-img-modal .Polaris-InlineStack {
-  align-self: center ;
+  align-self: center;
   --pc-inline-stack-gap-xs: var(--p-space-00) !important;
 }
 
-.section-img-modal .Polaris-InlineStack .Polaris-Box .Polaris-InlineStack .Polaris-InlineStack .Polaris-Button--variantTertiary {
+.section-img-modal
+  .Polaris-InlineStack
+  .Polaris-Box
+  .Polaris-InlineStack
+  .Polaris-InlineStack
+  .Polaris-Button--variantTertiary {
   --pc-button-bg_hover: rgb(255 255 255 / 5%) !important;
   --pc-button-bg_active: rgb(255 255 255 / 8%) !important;
 }
-.section-card-buttons{
+.section-card-buttons {
   align-self: auto !important;
 }
 .new-chat {
   margin: 0 !important;
 }
-.dashboard-icon{
+.dashboard-icon {
   margin: 0px !important;
 }
-.main-page .Polaris-Box .Polaris-Page-Header--isSingleRow{
+.main-page .Polaris-Box .Polaris-Page-Header--isSingleRow {
   max-width: fit-content;
 }
 
@@ -558,6 +563,42 @@
 }
 
 .Polaris-Modal-Section .Polaris-Select__SelectedOption {
-  overflow:unset;
+  overflow: unset;
   flex: none;
+}
+
+.plan-card.Polaris-Layout__Section {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.plan-card .Polaris-ShadowBevel {
+  min-width: calc(100% - 70%);
+  border: 1px solid var(--p-color-border-secondary);
+}
+
+.plan-card .Polaris-Grid-Cell .Polaris-ShadowBevel {
+  width: 100%;
+  gap: 10px;
+}
+
+.plan-card .Polaris-Grid {
+  min-width: calc(100% - 0%);
+  gap: 20px;
+}
+
+.plan-card .Polaris-Box,
+.plan-card .Polaris-BlockStack {
+  height: 100%;
+}
+
+.plan-card .Polaris-BlockStack .Polaris-List {
+  margin-bottom: 20px;
+}
+
+.plan-card .Polaris-Button {
+  margin-top: auto;
 }

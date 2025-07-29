@@ -997,8 +997,10 @@ import { ConfirmationModal } from "../components";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import emptyData from "/assets/empty-data.png";
+import { useApiData } from "../components/ApiDataProvider";
 
 function MyLibrary() {
+  const { planCheck } = useApiData();
   const [dashboardData, setDashboardData] = useState([]);
   const [trackTabChange, setTrackTabChange] = useState(false);
   const [deleteId, setDeleteId] = useState();
@@ -1010,15 +1012,14 @@ function MyLibrary() {
   const [appStatus, setAppStatus] = useState();
   const [showBanner, setShowBanner] = useState(false);
   const [showThemeBanner, setShowThemeBanner] = useState(true);
+  const [openSteps, setOpenSteps] = useState(false);
   const lazyContentRefs = useRef([]);
   const rowsPerPage = 10;
-  const encryptor = new MyEncryption();
   const navigate = useNavigate();
-
+  const encryptor = new MyEncryption();
   const urlParams = new URLSearchParams(window.location.search);
   const SHOP = urlParams.get("shop");
   const params = {};
-  const [openSteps, setOpenSteps] = useState(false);
 
   const { data: appStatusData, isPending: isLoading } = useQuery({
     queryKey: ["app_status"],
@@ -1413,7 +1414,7 @@ function MyLibrary() {
                                 onClick={() =>
                                   navigate({
                                     href: `/sectionLibrary${window.location.search}`,
-                                   search: location.search,
+                                    search: location.search,
                                   })
                                 }
                               >
@@ -1516,13 +1517,12 @@ function MyLibrary() {
                     {dashboardData?.sections?.length > 0 && (
                       <InlineStack align="end">
                         <Button
-                          onClick={() =>{
-                          
+                          onClick={() => {
                             navigate({
                               href: `/sectionLibrary${window.location.search}`,
                               search: location.search,
-                            })}
-                          }
+                            });
+                          }}
                         >
                           View All
                         </Button>
@@ -1530,7 +1530,7 @@ function MyLibrary() {
                     )}
                   </InlineStack>
                   <Card>
-                    <Bleed marginInline={400}>
+                    <Bleed marginInline={400} marginBlockStart={400}>
                       {dashboardData?.sections?.length === 0 ? (
                         <BlockStack inlineAlign="center">
                           <img style={{ maxHeight: "15rem" }} src={emptyData} />
@@ -1558,7 +1558,6 @@ function MyLibrary() {
                               { title: "Customize", alignment: "end" },
                             ]}
                             selectable={false}
-                            // loading={isDashboardApiCall}
                           >
                             {rows}
                           </IndexTable>
@@ -1628,7 +1627,7 @@ function MyLibrary() {
                           onClick={() =>
                             navigate({
                               href: `/page-builder${window.location.search}`,
-                              search : location.search
+                              search: location.search,
                             })
                           }
                         >
@@ -1638,7 +1637,7 @@ function MyLibrary() {
                     )}
                   </InlineStack>
                   <Card>
-                    <Bleed marginInline={400}>
+                    <Bleed marginInline={400} marginBlockStart={400}>
                       {dashboardData?.templates?.length === 0 ? (
                         <BlockStack inlineAlign="center">
                           <img style={{ maxHeight: "15rem" }} src={emptyData} />

@@ -39,6 +39,7 @@ import Nodata from "/assets/nodata.svg";
 // import { useSelector } from "react-redux";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useApiData } from "../components/ApiDataProvider";
 
 function Library() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,6 +69,7 @@ function Library() {
   const [noResultsFound, setNoResultsFound] = useState(false);
   const [sectionsData, setSectionsData] = useState([]);
   const iframeRef = useRef(null);
+  const { planCheck } = useApiData();
 
   const Filter = [
     "Banner",
@@ -108,7 +110,6 @@ function Library() {
     staleTime: 0,
     refetchOnMount: true,
   });
-  console.log('listingApiData', listingApiData)
 
   const handleBannerButtonClick = () => {
     setAppStatus((prev) => ({

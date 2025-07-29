@@ -19,28 +19,29 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import en from "@shopify/polaris/locales/en.json";
 import { NavMenu } from "@shopify/app-bridge-react";
 import { onINP, onLCP } from "web-vitals";
+import ApiDataProvider from "./components/ApiDataProvider";
 // import { persistor, store } from "./redux/store.js";
 // import { PersistGate } from "redux-persist/integration/react";
 // import { Provider } from "react-redux";
 
-onLCP(
-  (lcp) => {
-    console.log(`Web vitals - LCP in seconds:`, lcp.value / 1000);
-    console.log(`Web vitals - LCP details:`, lcp.entries);
-    if (lcp.value > 2500) {
-      console.warn("Poor LCP detected:", lcp.value);
-    }
-  },
-  { reportAllChanges: true }
-);
+// onLCP(
+//   (lcp) => {
+//     console.log(`Web vitals - LCP in seconds:`, lcp.value / 1000);
+//     console.log(`Web vitals - LCP details:`, lcp.entries);
+//     if (lcp.value > 2500) {
+//       console.warn("Poor LCP detected:", lcp.value);
+//     }
+//   },
+//   { reportAllChanges: true }
+// );
 
-onINP(
-  (inp) => {
-    console.log(`Web vitals - INP in seconds:`, inp.value / 1000);
-    console.log(`Web vitals - INP details:`, inp.entries);
-  },
-  { reportAllChanges: true }
-);
+// onINP(
+//   (inp) => {
+//     console.log(`Web vitals - INP in seconds:`, inp.value / 1000);
+//     console.log(`Web vitals - INP details:`, inp.entries);
+//   },
+//   { reportAllChanges: true }
+// );
 
 const FastLink = ({ children, to, rel }) => {
   const navigate = useNavigate();
@@ -194,6 +195,20 @@ export const planPageRoute = createRoute({
   ),
 });
 
+export const pricingCallbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: `/pricing/callback`,
+  component: lazyRouteComponent(() => import("./pages/Callback")),
+  preload: true,
+  pendingComponent: () => (
+    <Page
+      subtitle="Build faster, sell smarter — unlock beautiful sections, craft standout
+          pages, and elevate your brand."
+      title="Page Builder"
+    ></Page>
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   sectionLibraryRoute,
@@ -202,7 +217,8 @@ const routeTree = rootRoute.addChildren([
   createPageRoute,
   aiBuilderRoute,
   aiBuilderGenerateRoute,
-  planPageRoute
+  planPageRoute,
+  pricingCallbackRoute,
 ]);
 
 const router = createRouter({ routeTree });
@@ -216,7 +232,9 @@ if (!rootElement.innerHTML) {
       <QueryClientProvider client={queryClient}>
         {/* <Provider store={store}> */}
         {/* <PersistGate loading={null} persistor={persistor}> */}
-        <RouterProvider router={router} />
+        <ApiDataProvider>
+          <RouterProvider router={router} />
+        </ApiDataProvider>
         {/* </PersistGate>
         </Provider> */}
       </QueryClientProvider>

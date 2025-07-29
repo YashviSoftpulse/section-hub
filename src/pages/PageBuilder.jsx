@@ -1,10 +1,9 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Page,
   BlockStack,
   Grid,
   TextField,
-  Select,
   Button,
   Modal,
   Text,
@@ -18,7 +17,6 @@ import {
   Card,
   Spinner,
 } from "@shopify/polaris";
-import { Icon } from "@shopify/polaris";
 import { DeleteIcon, EditIcon, ViewIcon, XIcon } from "@shopify/polaris-icons";
 import {
   capitalizeFirstLetter,
@@ -29,8 +27,10 @@ import {
 import { ConfirmationModal, Skeleton_Page } from "../components";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useApiData } from "../components/ApiDataProvider";
 
 function PageBuilder() {
+  const { planCheck } = useApiData();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteLoader, setDeleteLoader] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -53,6 +53,7 @@ function PageBuilder() {
   const [deleteId, setDeleteId] = useState();
   const [liveConfirmModalOpen, setLiveConfirmModalOpen] = useState(false);
   const [liveLoading, setLiveLoading] = useState(false);
+  const [premiumModal, setPremiumModal] = useState(false);
   const textRef = useRef();
   const navigate = useNavigate();
   const encryptor = new MyEncryption();
@@ -62,7 +63,6 @@ function PageBuilder() {
 
   useEffect(() => {
     if (!lazyContentRefs.current.length) return;
-
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -104,7 +104,11 @@ function PageBuilder() {
     setSelectedTheme(value);
   };
 
-  const { data: templateListData, refetch: templateList, isPending: isListingApiCall } = useQuery({
+  const {
+    data: templateListData,
+    refetch: templateList,
+    isPending: isListingApiCall,
+  } = useQuery({
     queryKey: ["template_listing"],
     queryFn: async () => {
       const formdata = new FormData();
@@ -142,7 +146,6 @@ function PageBuilder() {
     }
   }, [templateListData]);
 
-
   const handleQueryChange = (value) => {
     setSearchTerm(value);
     if (
@@ -169,7 +172,9 @@ function PageBuilder() {
       } else {
         setFilteredThemes((prev) =>
           prev.filter((page) =>
-            page?.internal_title?.toLowerCase()?.includes(value.trim().toLowerCase())
+            page?.internal_title
+              ?.toLowerCase()
+              ?.includes(value.trim().toLowerCase())
           )
         );
       }
@@ -291,10 +296,17 @@ function PageBuilder() {
           <Button
             variant="primary"
             onClick={() => {
-              localStorage.setItem("pageData", JSON.stringify({}));
-              navigate({
-                href: `/page-builder/create${window.location.search}`,
-              });
+              if (
+                planCheck?.version === "2" &&
+                planCheck.plan_details.name === "Free"
+              ) {
+                setPremiumModal(true);
+              } else {
+                localStorage.setItem("pageData", JSON.stringify({}));
+                navigate({
+                  href: `/page-builder/create${window.location.search}`,
+                });
+              }
             }}
           >
             Create New Page
@@ -406,6 +418,19 @@ function PageBuilder() {
                         otherPage.uid === page.uid &&
                         otherPage.is_live !== page.is_live
                     );
+
+                    const currentUserPlan =
+                      planCheck?.plan_details?.name.toLowerCase();
+                    const requiredSectionPlan = page?.plan;
+
+                    const showPaidBadge =
+                      (planCheck?.version === "2" &&
+                        currentUserPlan === "free" &&
+                        (requiredSectionPlan === "basic" ||
+                          requiredSectionPlan === "premium")) ||
+                      (currentUserPlan === "basic" &&
+                        requiredSectionPlan === "premium");
+
                     return (
                       <div
                         key={index}
@@ -452,6 +477,12 @@ function PageBuilder() {
                             {page?.status === "unpublished" && (
                               <Badge variant="headingSm" tone="warning">
                                 Draft
+                              </Badge>
+                            )}
+
+                            {showPaidBadge && (
+                              <Badge variant="headingSm" tone="attention">
+                                Paid
                               </Badge>
                             )}
                           </InlineStack>
@@ -587,26 +618,34 @@ function PageBuilder() {
                                     <Button
                                       onClick={() =>
                                         window.open(
-                                          `https://${SHOP}/pages/${page?.title?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}`
+                                          `https://${SHOP}/pages/${page?.title
+                                            ?.toLowerCase()
+                                            ?.replace(/[()]/g, "")
+                                            ?.replace(/ /g, "-")}`
                                         )
                                       }
+                                      disabled={showPaidBadge}
                                       icon={ViewIcon}
                                     />
                                   </Tooltip>
                                 )}
                               </InlineStack>
                             ) : (
-                              
-
                               <Button
                                 size="medium"
                                 variant="secondary"
                                 onClick={() => {
-                                  setModalPageId(page?.id);
-                                  setThemeListModal(true);
-                                  setSelectedPage(
-                                    page.title ? page.title : page.name
-                                  );
+                                  if (showPaidBadge) {
+                                    navigate({
+                                      href: `/plans${window.location.search}`,
+                                    });
+                                  } else {
+                                    setModalPageId(page?.id);
+                                    setThemeListModal(true);
+                                    setSelectedPage(
+                                      page.title ? page.title : page.name
+                                    );
+                                  }
                                 }}
                                 style={{
                                   position: "absolute",
@@ -616,7 +655,28 @@ function PageBuilder() {
                                   zIndex: 1,
                                 }}
                               >
-                                Publish
+                                {showPaidBadge ? (
+                                  <InlineStack gap={150}>
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M3 6L7 12L12 6L17 12L21 6V20H3V6Z"
+                                        fill="#FFD700"
+                                        stroke="#FFD700"
+                                        strokeWidth="2"
+                                      />
+                                    </svg>
+                                    <Text variant="bodySm" fontWeight="medium">
+                                      Upgrade Plan
+                                    </Text>
+                                  </InlineStack>
+                                ) : (
+                                  "Publish"
+                                )}
                               </Button>
                             )}
                             {page.is_live == false &&
@@ -627,8 +687,14 @@ function PageBuilder() {
                                     size="medium"
                                     variant="secondary"
                                     onClick={() => {
-                                      setSelectedPage(page),
+                                      if (showPaidBadge) {
+                                        navigate({
+                                          href: `/plans${window.location.search}`,
+                                        });
+                                      } else {
+                                        setSelectedPage(page);
                                         setLiveConfirmModalOpen(true);
+                                      }
                                     }}
                                     style={{
                                       position: "absolute",
@@ -638,7 +704,31 @@ function PageBuilder() {
                                       zIndex: 1,
                                     }}
                                   >
-                                    Publish to Live
+                                    {showPaidBadge ? (
+                                      <InlineStack gap={150}>
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M3 6L7 12L12 6L17 12L21 6V20H3V6Z"
+                                            fill="#FFD700"
+                                            stroke="#FFD700"
+                                            strokeWidth="2"
+                                          />
+                                        </svg>
+                                        <Text
+                                          variant="bodySm"
+                                          fontWeight="medium"
+                                        >
+                                          Upgrade Plan
+                                        </Text>
+                                      </InlineStack>
+                                    ) : (
+                                      "Publish to Live"
+                                    )}
                                   </Button>
                                 </InlineStack>
                               )}
@@ -660,6 +750,7 @@ function PageBuilder() {
                                     size="medium"
                                     variant="secondary"
                                     icon={ViewIcon}
+                                    disabled={showPaidBadge}
                                   />
                                 </Tooltip>
                               </InlineStack>
@@ -707,6 +798,51 @@ function PageBuilder() {
                   </div>
                 </Modal>
               ))}
+              <Modal
+                open={premiumModal}
+                onClose={() => setPremiumModal(false)}
+                size="small"
+                title="Upgrade to Create New Pages"
+                secondaryActions={{
+                  content: (
+                    <InlineStack gap={150}>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 6L7 12L12 6L17 12L21 6V20H3V6Z"
+                          fill="#FFD700"
+                          stroke="#FFD700"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                      <Text variant="bodySm" fontWeight="medium">
+                        Upgrade Plan
+                      </Text>
+                    </InlineStack>
+                  ),
+                  onAction: () => {
+                    navigate({ href: `/plans${window.location.search}` });
+                  },
+                }}
+                primaryAction={[
+                  {
+                    content: "Cancel",
+                    onAction: () => setPremiumModal(false),
+                  },
+                ]}
+              >
+                <Modal.Section>
+                  <BlockStack gap="200">
+                    <Text variant="bodyMd" as="p">
+                     Ready to stand out? Upgrade now to create custom pages and use every premium feature.
+                    </Text>
+                  </BlockStack>
+                </Modal.Section>
+              </Modal>
               <Modal
                 open={confirmModalOpen}
                 onClose={closeConfirmModal}
@@ -827,7 +963,10 @@ function PageBuilder() {
                           <List.Item>
                             Select Page{" "}
                             <b>
-                              {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}
+                              {selectedPage
+                                ?.toLowerCase()
+                                ?.replace(/[()]/g, "")
+                                ?.replace(/ /g, "-")}
                             </b>{" "}
                             Option From the Dropdown{" "}
                           </List.Item>
@@ -993,7 +1132,10 @@ function PageBuilder() {
                                   </svg>
                                   <div>
                                     <p style={{ fontWeight: "bold" }}>
-                                      {selectedPage?.toLowerCase()?.replace(/[()]/g, "")?.replace(/ /g, "-")}
+                                      {selectedPage
+                                        ?.toLowerCase()
+                                        ?.replace(/[()]/g, "")
+                                        ?.replace(/ /g, "-")}
                                     </p>
                                     <span>Assigned to 0 pages</span>
                                   </div>
@@ -1090,7 +1232,7 @@ function PageBuilder() {
                                 wordWrap: "break-word",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
-                                gap: '10px'
+                                gap: "10px",
                               }}
                             >
                               <Text>{theme.name}</Text>

@@ -8,14 +8,64 @@ import {
   Button,
   List,
   Divider,
+  Badge,
+  Grid,
+  SkeletonTabs,
+  SkeletonBodyText,
+  Box,
 } from "@shopify/polaris";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React from "react";
+import { fetchData, getApiURL } from "../action";
+import { useApiData } from "../components/ApiDataProvider";
 
 function Plan() {
+  const { planCheck } = useApiData();
+  const urlParams = new URLSearchParams(window.location.search);
+  const SHOP = urlParams.get("shop");
+
+  const { data: planListing, isPending: isApicalling } = useQuery({
+    queryKey: ["planListing"],
+    queryFn: async () => {
+      const formdata = new FormData();
+      formdata.append("shop", SHOP);
+      const response = await fetchData(getApiURL("/plan-list"), formdata);
+      if (response.status === true) return await response;
+    },
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  const { mutate: selectPlan, isPending: isSelectingPlan } = useMutation({
+    mutationFn: async (planIndex) => {
+      const formData = new FormData();
+      formData.append("shop", SHOP);
+      formData.append("plan_index", btoa(planIndex.toString()));
+      return fetchData(getApiURL("/pricing"), formData);
+    },
+    onSuccess: (response) => {
+      if (response.status === true) {
+        if (response.confirmation_url) {
+          window.open(response.confirmation_url, "_blank");
+        } else {
+          shopify.toast.show(response.message, { duration: 3000 });
+          window.location.href = `/dashboard${window.location.search}`;
+        }
+      } else {
+        shopify.toast.show(response.message || "An error occurred.", {
+          isError: true,
+        });
+      }
+    },
+    onError: (error) => {
+      shopify.toast.show(error.message, { isError: true });
+    },
+  });
+
   return (
-    <Page  title="Plans & Pricing">
+    <Page title="Plans & Pricing">
       <Layout>
-         <Layout.Section></Layout.Section>
+        <Layout.Section></Layout.Section>
         <Layout.Section>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <Text variant="headingXl" as="h1">
@@ -26,88 +76,86 @@ function Plan() {
             </Text>
           </div>
         </Layout.Section>
+        <div className="Polaris-Layout__Section plan-card">
+          {isApicalling ? (
+            <Grid>
+              {[1, 2, 3].map((item) => (
+                <Grid.Cell
+                  key={item}
+                  columnSpan={{ xs: 3, sm: 2, md: 2, lg: 4, xl: 4 }}
+                >
+                  <Card>
+                    <BlockStack gap="400">
+                      <SkeletonTabs count={2} />
+                      <SkeletonTabs count={1} />
+                      <SkeletonBodyText lines={2} />
+                      <Divider />
+                      <SkeletonBodyText lines={3} />
+                      <SkeletonBodyText lines={3} />
+                    </BlockStack>
+                  </Card>
+                </Grid.Cell>
+              ))}
+            </Grid>
+          ) : (
+            Object.entries(planListing.plans || {}).map(
+              ([key, plan], origIndex) => {
+                const activePlanName = planCheck?.plan_details?.name;
+                const currentPlanName = plan?.name;
+                const isActive = activePlanName === currentPlanName;
+                return (
+                  <Card>
+                    <BlockStack gap="300">
+                      <InlineStack align="space-between">
+                        <InlineStack gap={200}>
+                          <Text variant="bodyLg" as="p">
+                            {plan.name} Plan
+                          </Text>
+                        </InlineStack>
+                        {planCheck?.plan_details?.name ===
+                          plan.name.charAt(0).toUpperCase() +
+                            plan.name.slice(1).toLowerCase() && (
+                          <Badge tone="success">Active</Badge>
+                        )}
+                      </InlineStack>
+                      <InlineStack gap={100}>
+                        <Text variant="headingLg">
+                          {plan.price === 0 ? "Free" : `$${plan.price}`}
+                        </Text>
+                        {key === "basic" && <Text> /month</Text>}
+                        {key === "premium" && <Text> /month</Text>}
+                      </InlineStack>
 
-        <Layout.Section>
-          <InlineStack gap="400" align="center" wrap={false}>
-            <Card>
-              <BlockStack gap="400">
-                <Text variant="headingMd" as="h3">
-                  Free Plan
-                </Text>
-                <Text variant="headingXl" as="h2">
-                  $0
-                  <Text variant="bodyMd" as="span" tone="subdued">
-                    {" "}
-                    / month
-                  </Text>
-                </Text>
-                <Divider />
-                <List>
-                  <List.Item>30 Live Sections (Lifetime Access)</List.Item>
-                  <List.Item>1 Page Template</List.Item>
-                  <List.Item>No Customization</List.Item>
-                  <List.Item>No Custom Section</List.Item>
-                  <List.Item>Email Support</List.Item>
-                </List>
-                <Button fullWidth size="large">
-                  Choose Plan
-                </Button>
-              </BlockStack>
-            </Card>
+                      <Divider />
+                      <BlockStack gap={500}>
+                        <List>
+                          {Object.entries(plan?.content || {})?.map(
+                            ([index, content]) => {
+                              return (
+                                <List.Item key={index}>{content}</List.Item>
+                              );
+                            }
+                          )}
+                        </List>
 
-            <Card>
-              <BlockStack gap="400">
-                <Text variant="headingMd" as="h3">
-                  Basic Plan
-                </Text>
-                <Text variant="headingXl" as="h2">
-                  $9
-                  <Text variant="bodyMd" as="span" tone="subdued">
-                    {" "}
-                    / month
-                  </Text>
-                </Text>
-                <Divider />
-                <List>
-                  <List.Item>All Features in Free +</List.Item>
-                  <List.Item>Access to 100+ Pre-made Sections</List.Item>
-                  <List.Item>5 Customization Requests</List.Item>
-                  <List.Item>5 Page Templates</List.Item>
-                  <List.Item>1 Custom Section (made just for you)</List.Item>
-                  <List.Item>Email & Chat Support</List.Item>
-                </List>
-                <Button variant="primary" fullWidth size="large">
-                  Choose Plan
-                </Button>
-              </BlockStack>
-            </Card>
-
-            <Card>
-              <BlockStack gap="400">
-                <Text variant="headingMd" as="h3">
-                  Premium Plan
-                </Text>
-                <Text variant="headingXl" as="h2">
-                  $15
-                  <Text variant="bodyMd" as="span" tone="subdued">
-                    / month
-                  </Text>
-                </Text>
-                <Divider />
-                <List>
-                  <List.Item>All Features in Basic +</List.Item>
-                  <List.Item>Unlimited Customization Requests</List.Item>
-                  <List.Item>Unlimited Page Templates</List.Item>
-                  <List.Item>5 Custom Section (made just for you)</List.Item>
-                  <List.Item>Priority Support</List.Item>
-                </List>
-                <Button fullWidth size="large">
-                  Choose Plan
-                </Button>
-              </BlockStack>
-            </Card>
-          </InlineStack>
-        </Layout.Section>
+                        {!isActive && (
+                          <Button
+                            variant="primary"
+                            onClick={() => selectPlan(origIndex)}
+                          >
+                            {key === "basic" && "Upgrade To Basic"}
+                            {key === "premium" && "Upgrade To Premium"}
+                            {key === "free" && "Downgrade To Free"}
+                          </Button>
+                        )}
+                      </BlockStack>
+                    </BlockStack>
+                  </Card>
+                );
+              }
+            )
+          )}
+        </div>
       </Layout>
     </Page>
   );

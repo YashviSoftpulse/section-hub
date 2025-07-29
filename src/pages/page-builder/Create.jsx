@@ -549,7 +549,7 @@ function Create() {
                   </BlockStack>
                 </Card>
               </div>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 2, lg: 9, xl: 9 }}>
+              <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 9, xl: 9 }}>
                 <Card>
                   <BlockStack gap={400}>
                     {selectedSection?.length === 0 ? (
@@ -588,7 +588,6 @@ function Create() {
 
                           {selectedSection.map(
                             (section, index) => (
-                              console.log("section", section),
                               (
                                 <img
                                   alt={section.name}
@@ -915,7 +914,7 @@ function Create() {
 
                   <List gap="loose" type="number">
                     <List.Item>
-                      Go to {console.log("selectedTheme", selectedTheme)}
+                      Go to 
                       <Link
                         to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                         target="blank"

@@ -36,6 +36,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import { fetchData, getApiURL, MyEncryption } from "../../action";
 import debounce from "lodash.debounce";
+import { useApiData } from "../../components/ApiDataProvider";
 
 // AIzaSyAX2r4N4J0OvuEpaMN1e3EqeTsJqZpW_4Q
 
@@ -65,6 +66,7 @@ export default function Generate() {
   const nodomainShop = SHOP?.replace(".myshopify.com", "");
   const chatScrollContainerRef = useRef(null);
   const initialFetchDone = useRef(false);
+  const {planCheck } = useApiData()
 
   const {
     data: generatedSection,
@@ -198,6 +200,7 @@ export default function Generate() {
       }
     }, 200),
     [chatPage, isChatLoading, hasMoreChats, fetchChatList]
+    
   );
 
   useEffect(() => {
@@ -390,7 +393,7 @@ export default function Generate() {
                             setQuery(""),
                               setPreviewHtml(""),
                               setSelectedPrompt({});
-                              setHasGeneratedOnce(false)
+                            setHasGeneratedOnce(false);
                           }}
                         ></Button>
                       </Tooltip>
@@ -446,21 +449,13 @@ export default function Generate() {
                   </BlockStack>
                   <Bleed marginInline={200}>
                     <BlockStack gap={isChatLoading && 300}>
-                      {isChatLoading ? (
-                        <BlockStack gap={400}>
-                          <SkeletonBodyText lines={1} />
-                          <SkeletonBodyText lines={1} />
-                          <SkeletonBodyText lines={1} />
-                          <SkeletonBodyText lines={1} />
-                          <SkeletonBodyText lines={1} />
-                          <SkeletonBodyText lines={1} />
-                        </BlockStack>
-                      ) : (
+                     
                         <div
                           ref={chatScrollContainerRef}
                           onScroll={handleScroll}
                           style={{
-                            height: "400px",
+                            height: "100%",
+                            maxHeight: "400px",
                             overflowY: "auto",
                             paddingRight: "1rem",
                             boxSizing: "border-box",
@@ -483,7 +478,7 @@ export default function Generate() {
                             !hasMoreChats && <Text>No more history</Text>
                           )}
                         </div>
-                      )}
+                      
                     </BlockStack>
                   </Bleed>
                 </BlockStack>
@@ -533,10 +528,12 @@ export default function Generate() {
                       padding: "10px ",
                       borderRadius: "6px",
                       fontFamily: "monospace",
-                      overflow: "scroll",
+                      overflow: "auto",
                       maxHeight: "555px",
-                      height: "100%",
+                      margin: "10px 0 0",
                       scrollbarWidth: "thin",
+                      height: "100%",
+                      minHeight: "565px",
                     }}
                   >
                     {(generatedSection || previewHtml)
@@ -557,7 +554,7 @@ export default function Generate() {
         primaryAction={{
           content: "Save",
           onAction: () => saveSection(),
-          // loading: isSaveing,
+          loading: isSaving,
         }}
       >
         <Modal.Section>
