@@ -75,9 +75,7 @@ const rootRoute = createRootRoute({
         {/* <FastLink to={`/ai-builder${window.location.search}`}>
           AI Builder{" "}
         </FastLink> */}
-
         <FastLink to={`/plans${window.location.search}`}>Plans</FastLink>
-
         <FastLink to={`/helpGuide${window.location.search}`}>
           Help Guide{" "}
         </FastLink>
@@ -194,7 +192,6 @@ export const pricingCallbackRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: `/pricing/callback`,
   component: lazyRouteComponent(async () => import("./pages/Callback")),
-
   preload: true,
   pendingComponent: () => (
     <Page
@@ -228,11 +225,9 @@ if (!rootElement.innerHTML) {
       <QueryClientProvider client={queryClient}>
         {/* <Provider store={store}> */}
         {/* <PersistGate loading={null} persistor={persistor}> */}
-
         <ApiDataProvider>
           <RouterProvider router={router} />
         </ApiDataProvider>
-
         {/* </PersistGate>
         </Provider> */}
       </QueryClientProvider>
