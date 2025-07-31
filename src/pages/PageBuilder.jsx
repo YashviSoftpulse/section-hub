@@ -265,7 +265,7 @@ function PageBuilder() {
     if (publish.status === true) {
       setPublishSuccess(publish);
       setIsPublishing(false);
-      setThemeListModal(false);
+      setInternalName("");
       const formdata = new FormData();
       formdata.append("type", "My pages");
       const response = await fetchData(
@@ -275,9 +275,10 @@ function PageBuilder() {
       if (response.status === true) {
         setPageList(response.data);
       }
-      setInternalName("");
+      
       shopify.toast.show("Page Added Successfully.", { duration: 2000 });
     } else {
+      setPublishSuccess(null);
       setInternalName("");
       setIsPublishing(false);
       setThemeListModal(false);
@@ -903,13 +904,9 @@ function PageBuilder() {
               size={publishSuccess?.status === true ? "large" : "small"}
               open={themeListModal}
               onClose={() => {
-                if (publishSuccess?.status === true) {
-                  setThemeListModal(false);
-                  setPublishSuccess(null);
-                  navigate({ href: `/page-builder${window.location.search}` });
-                }
                 setInternalName("");
                 setThemeListModal(false);
+                setPublishSuccess(null);
                 navigate({ href: `/page-builder${window.location.search}` });
               }}
               title={
@@ -925,8 +922,12 @@ function PageBuilder() {
                 onAction:
                   publishSuccess?.status === true
                     ? () => {
-                        navigate({ href: `/page-builder${location.search}` });
-                        setThemeListModal(false), setPublishSuccess(null);
+                        setThemeListModal(false),
+                          setPublishSuccess(null),
+                          setIsPublishing(false);
+                        navigate({
+                          href: `/page-builder${window.location.search}`,
+                        });
                       }
                     : publishTemplate,
                 loading: isPublishing,
