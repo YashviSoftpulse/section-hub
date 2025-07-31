@@ -103,6 +103,25 @@ function Plan() {
                 const activePlanName = planCheck?.plan_details?.name;
                 const currentPlanName = plan?.name;
                 const isActive = activePlanName === currentPlanName;
+                const planKey = plan.name.toLowerCase();
+
+                let buttonLabel = "";
+                const currentPlan =
+                  planCheck?.plan_details?.name?.toLowerCase();
+
+                if (currentPlan === "free" && planKey === "basic")
+                  buttonLabel = "Upgrade To Basic";
+                else if (currentPlan === "free" && planKey === "premium")
+                  buttonLabel = "Upgrade To Premium";
+                else if (currentPlan === "basic" && planKey === "premium")
+                  buttonLabel = "Upgrade To Premium";
+                else if (currentPlan === "basic" && planKey === "free")
+                  buttonLabel = "Downgrade To Free";
+                else if (currentPlan === "premium" && planKey === "basic")
+                  buttonLabel = "Downgrade To Basic";
+                else if (currentPlan === "premium" && planKey === "free")
+                  buttonLabel = "Downgrade To Free";
+
                 return (
                   <Card>
                     <BlockStack gap="300">
@@ -137,15 +156,14 @@ function Plan() {
                             }
                           )}
                         </List>
+                        {console.log("origIndex", origIndex)}
 
                         {!isActive && (
                           <Button
                             variant="primary"
                             onClick={() => selectPlan(origIndex)}
                           >
-                            {key === "basic" && "Upgrade To Basic"}
-                            {key === "premium" && "Upgrade To Premium"}
-                            {key === "free" && "Downgrade To Free"}
+                            {buttonLabel}
                           </Button>
                         )}
                       </BlockStack>

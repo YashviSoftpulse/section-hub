@@ -414,6 +414,7 @@ function PageBuilder() {
                   }}
                 >
                   {filteredThemes?.map((page, index) => {
+                    console.log("page", page);
                     const conflictingPage = filteredThemes.find(
                       (otherPage) =>
                         otherPage.uid === page.uid &&
@@ -430,7 +431,8 @@ function PageBuilder() {
                         (requiredSectionPlan === "basic" ||
                           requiredSectionPlan === "premium")) ||
                       (currentUserPlan === "basic" &&
-                        requiredSectionPlan === "premium");
+                        requiredSectionPlan === "premium") ||
+                      (planCheck?.version === "1" && page?.version === 2);
 
                     return (
                       <div
@@ -625,7 +627,6 @@ function PageBuilder() {
                                             ?.replace(/ /g, "-")}`
                                         )
                                       }
-                                      disabled={showPaidBadge}
                                       icon={ViewIcon}
                                     />
                                   </Tooltip>
@@ -751,7 +752,6 @@ function PageBuilder() {
                                     size="medium"
                                     variant="secondary"
                                     icon={ViewIcon}
-                                    
                                   />
                                 </Tooltip>
                               </InlineStack>
@@ -958,8 +958,7 @@ function PageBuilder() {
                               to={`https://admin.shopify.com/store/${nodomainShop}/themes/${selectedTheme?.id}/editor`}
                               target="blank"
                             >
-                               Theme Customizer
-                             
+                              Theme Customizer
                             </Link>{" "}
                             of Selected Theme
                           </List.Item>

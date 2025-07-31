@@ -602,3 +602,6 @@
 .plan-card .Polaris-Button {
   margin-top: auto;
 }
+.page-library .Polaris-IndexTable__StickyTableHeader {
+  visibility: hidden !important ;
+}

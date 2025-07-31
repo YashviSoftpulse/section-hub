@@ -1654,7 +1654,7 @@ function MyLibrary() {
                           </Text>
                         </BlockStack>
                       ) : (
-                        <BlockStack gap={200}>
+                        <div class="Polaris-BlockStack page-library" style={{"--pc-block-stack-order": "column","--pc-block-stack-gap-xs": "var(--p-space-200)"}}>
                           <IndexTable
                             itemCount={templateRows.length}
                             loading={isDashboardApiCall}
@@ -1665,6 +1665,7 @@ function MyLibrary() {
                               { title: "", alignment: "end" },
                             ]}
                             selectable={false}
+                            
                           >
                             {templateRows}
                           </IndexTable>
@@ -1691,7 +1692,7 @@ function MyLibrary() {
                               </div>
                             </div>
                           </InlineStack>
-                        </BlockStack>
+                        </div>
                       )}
                     </Bleed>
                   </Card>

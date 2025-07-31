@@ -16,11 +16,15 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
   const navigate = useNavigate();
   const currentUserPlan = planCheck?.plan_details?.name.toLowerCase();
   const requiredSectionPlan = section?.plan;
-  const showPaidBadge =
-    (planCheck?.version === "2" &&
-      currentUserPlan === "free" &&
-      (requiredSectionPlan === "basic" || requiredSectionPlan === "premium")) ||
-    (currentUserPlan === "basic" && requiredSectionPlan === "premium");
+const showPaidBadge =
+  (planCheck?.version === "2" &&
+    currentUserPlan === "free" &&
+    (requiredSectionPlan === "basic" || requiredSectionPlan === "premium")) ||
+  (planCheck?.version === "2" &&
+    currentUserPlan === "basic" &&
+    requiredSectionPlan === "premium") ||
+  (planCheck?.version === "1" && section.version === 2);
+
 
   return (
     <Card key={section.id}>
@@ -56,7 +60,7 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
           >
             <Button
               onClick={() =>
-                showPaidBadge
+                showPaidBadge 
                   ? navigate({ href: `/plans${window.location.search}` })
                   : handlePublishClick(section)
               }
@@ -92,7 +96,6 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
                 size="medium"
                 variant="secondary"
                 icon={ViewIcon}
-               
               />
             </Tooltip>
           </div>

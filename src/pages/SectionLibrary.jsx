@@ -72,8 +72,8 @@ function Library() {
   const { planCheck } = useApiData();
 
   const Filter = [
-    "Free",
-    "Paid",
+    // "Free",
+    // "Paid",
     "Banner",
     "Video",
     "Image",
@@ -158,7 +158,7 @@ function Library() {
     return () => {
       observer.disconnect();
     };
-  }, [appStatus, filteredSections, preview]);
+  }, [appStatus, preview]);
 
   const lazyContentRefs = useRef([]);
   const addToRefs = (el) => {
@@ -244,10 +244,10 @@ function Library() {
         const plan = section?.plan?.toLowerCase(); 
 
           switch (filter) {
-            case "Free":
-              return plan === "free";
-            case "Paid":
-              return plan === "basic" || plan === "premium";
+            // case "Free":
+            //   return plan === "free";
+            // case "Paid":
+            //   return plan === "basic" || plan === "premium";
             case "Collection":
               return name.includes("collection") || name.includes("category");
             case "Image":
@@ -271,10 +271,10 @@ function Library() {
         const plan = section?.plan?.toLowerCase(); 
 
         switch (filter) {
-          case "Free":
-            return plan === "free";
-          case "Paid":
-            return plan === "basic" || plan === "premium";
+          // case "Free":
+          //   return plan === "free";
+          // case "Paid":
+          //   return plan === "basic" || plan === "premium";
           case "Collection":
             return name.includes("collection") || name.includes("category");
           case "Image":
@@ -512,10 +512,11 @@ function Library() {
                               return (
                                 <div
                                   key={index}
-                                  className=" section-card lazyContent"
-                                  ref={addToRefs}
+                                  className=" section-card "
+                                  // ref={addToRefs}
                                 >
                                   <SectionCard
+                                   key={index}
                                     section={section}
                                     handleViewIconClick={handleViewIconClick}
                                     handlePublishClick={handlePublishClick}

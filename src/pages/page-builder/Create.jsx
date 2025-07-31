@@ -553,7 +553,7 @@ function Create() {
                   </BlockStack>
                 </Card>
               </div>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 9, xl: 9 }}>
+              <Grid.Cell columnSpan={{ xs: 2, sm: 4, md: 4, lg: 9, xl: 9 }}>
                 <Card>
                   <BlockStack gap={400}>
                     {selectedSection?.length === 0 ? (
@@ -796,7 +796,7 @@ function Create() {
                   </Card>
                 </div>
                 <div
-                  className="Polaris-Grid-Cell Polaris-Grid-Cell--cell_4ColumnXs Polaris-Grid-Cell--cell_2ColumnSm Polaris-Grid-Cell--cell_2ColumnMd Polaris-Grid-Cell--cell_9ColumnLg Polaris-Grid-Cell--cell_9ColumnXl"
+                  className="Polaris-Grid-Cell Polaris-Grid-Cell--cell_4ColumnXs Polaris-Grid-Cell--cell_4ColumnSm Polaris-Grid-Cell--cell_4ColumnMd Polaris-Grid-Cell--cell_9ColumnLg Polaris-Grid-Cell--cell_9ColumnXl"
                   style={{
                     height: "100%",
                     display: "flex",
