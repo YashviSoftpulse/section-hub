@@ -72,8 +72,9 @@ function Library() {
   const { planCheck } = useApiData();
 
   const Filter = [
-    // "Free",
-    // "Paid",
+    ...(planCheck?.version === "2" && planCheck?.plan_details?.name === "Free"
+      ? ["Free", "Paid"]
+      : []),
     "Banner",
     "Video",
     "Image",
@@ -241,13 +242,13 @@ function Library() {
       filtered = filtered.filter((section) =>
         selectedFilters.some((filter) => {
           const name = section?.name?.toLowerCase();
-        const plan = section?.plan?.toLowerCase(); 
+          const plan = section?.plan?.toLowerCase();
 
           switch (filter) {
-            // case "Free":
-            //   return plan === "free";
-            // case "Paid":
-            //   return plan === "basic" || plan === "premium";
+            case "Free":
+              return plan === "free";
+            case "Paid":
+              return plan === "basic" || plan === "premium";
             case "Collection":
               return name.includes("collection") || name.includes("category");
             case "Image":
@@ -257,7 +258,10 @@ function Library() {
             case "Newsletter":
               return name.includes("newsletter") || name.includes("welcome");
             default:
-              return name.includes(filter.toLowerCase());
+              return (
+                typeof filter === "string" &&
+                name.includes(filter.toLowerCase())
+              );
           }
         })
       );
@@ -268,13 +272,13 @@ function Library() {
     const counts = Filter.reduce((acc, filter) => {
       acc[filter] = sectionsData?.filter((section) => {
         const name = section?.name?.toLowerCase();
-        const plan = section?.plan?.toLowerCase(); 
+        const plan = section?.plan?.toLowerCase();
 
         switch (filter) {
-          // case "Free":
-          //   return plan === "free";
-          // case "Paid":
-          //   return plan === "basic" || plan === "premium";
+          case "Free":
+            return plan === "free";
+          case "Paid":
+            return plan === "basic" || plan === "premium";
           case "Collection":
             return name.includes("collection") || name.includes("category");
           case "Image":
@@ -323,6 +327,7 @@ function Library() {
       setIsPublishing(false);
       shopify.toast.show("Sorry! Process Failed. Please try again later.", {
         duration: 2000,
+        isError: true,
       });
     }
   };
@@ -516,7 +521,7 @@ function Library() {
                                   // ref={addToRefs}
                                 >
                                   <SectionCard
-                                   key={index}
+                                    key={index}
                                     section={section}
                                     handleViewIconClick={handleViewIconClick}
                                     handlePublishClick={handlePublishClick}

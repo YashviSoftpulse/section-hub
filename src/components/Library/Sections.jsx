@@ -68,7 +68,7 @@ function Sections() {
       setThemeListModal(!themeListModal);
       shopify.toast.show(publish?.message, { duration: 3000 });
     }
-    shopify.toast.show(publish?.message, { duration: 3000 });
+    shopify.toast.show(publish?.message, { duration: 3000 , isError:true });
   };
 
   const ThemeListing = async () => {

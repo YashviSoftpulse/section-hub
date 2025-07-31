@@ -11,7 +11,6 @@ function Callback() {
     formData.append("plan_type", planType);
     formData.append("charge_id", chargeId);
     const response = await fetchData(getApiURL("/pricing/callback"), formData);
-
     if (response.status === true) {
       shopify.toast.show(response.message, { duration: 3000 });
       window.open(`/dashboard${window.location.search}`);

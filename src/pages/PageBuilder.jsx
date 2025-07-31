@@ -220,10 +220,11 @@ function PageBuilder() {
       setSelectedPage(null);
       templateList();
       shopify.toast.show("Successfully Move to Live", { duration: 2000 });
+    } else {
+      setLiveConfirmModalOpen(false);
+      setLiveLoading(false);
+      shopify.toast.show(response?.message, { duration: 2000, isError: true });
     }
-    setLiveConfirmModalOpen(false);
-    setLiveLoading(false);
-    shopify.toast.show(response?.message, { duration: 2000 });
   };
 
   const closeModal = () => {
@@ -282,6 +283,7 @@ function PageBuilder() {
       setThemeListModal(false);
       shopify.toast.show(publish.message, {
         duration: 2000,
+        isError: true,
       });
     }
   };

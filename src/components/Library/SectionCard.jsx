@@ -16,6 +16,8 @@ function SectionCard({ section, handleViewIconClick, handlePublishClick }) {
   const navigate = useNavigate();
   const currentUserPlan = planCheck?.plan_details?.name.toLowerCase();
   const requiredSectionPlan = section?.plan;
+
+  console.log('first', currentUserPlan , requiredSectionPlan)
 const showPaidBadge =
   (planCheck?.version === "2" &&
     currentUserPlan === "free" &&
@@ -24,7 +26,6 @@ const showPaidBadge =
     currentUserPlan === "basic" &&
     requiredSectionPlan === "premium") ||
   (planCheck?.version === "1" && section.version === 2);
-
 
   return (
     <Card key={section.id}>

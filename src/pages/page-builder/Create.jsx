@@ -553,7 +553,7 @@ function Create() {
                   </BlockStack>
                 </Card>
               </div>
-              <Grid.Cell columnSpan={{ xs: 2, sm: 4, md: 4, lg: 9, xl: 9 }}>
+              <Grid.Cell columnSpan={{ xs: 2, sm: 4, md: 2, lg: 9, xl: 9 }}>
                 <Card>
                   <BlockStack gap={400}>
                     {selectedSection?.length === 0 ? (
